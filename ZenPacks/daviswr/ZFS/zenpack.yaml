@@ -1,0 +1,200 @@
+name: ZenPacks.daviswr.ZFS
+
+class_relationships:
+  - Products.ZenModel.Device.Device(zPools) 1:MC ZPool(server)
+  - ZPool(zRootVDevs) 1:MC ZRootDev(zPool)
+  - ZRootVDev(zVDevs) 1:MC ZVDev(zRootVDev)
+  - ZPool(zFS) 1:MC ZFS(zPool)
+
+classes:
+  DEFAULTS:
+    base: [zenpacklib.Component]
+
+  ZPool:
+    label: ZFS Storage Pool
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
+
+  ZVDev:
+    label: ZFS Virtual Device
+    properties:
+      DEFAULTS:
+        type: string
+      vDevType:
+        label: vDev Type
+        short_label: Type
+        # disk, file, spare, log, cache
+        default: file
+      GUID:
+        label: GUID
+        grid_display: false
+
+  ZRootVDev:
+    base: ZVDev
+    label: ZFS Root Virtual Device
+
+  ZFS:
+    base: Products.ZenModel.FileSystem.FileSystem
+    label: ZFS File System
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
+      creation:
+        # date? string?
+        type: int
+      used:
+        type: int
+      available:
+        type: int
+      referenced:
+        type: int
+      compressratio:
+        type: string
+      mounted:
+        type: boolean
+        default: true
+      quota:
+        type: int
+        default: 0
+      reservation:
+        type: int
+        default: 0
+      recordsize:
+        type: int
+        default: 131072
+      mountpoint:
+        type: string
+      sharenfs:
+        type: boolean
+        default: false
+      checksum:
+        type: boolean
+        default: true
+      compression:
+        type: boolean
+        default: false
+      atime:
+        type: boolean
+        default: true
+      devices:
+        type: boolean
+        default: true
+      exec:
+        type: boolean
+        default: true
+      setuid:
+        type: boolean
+        default: true
+      readonly:
+        type: boolean
+        default: false
+      zoned:
+        type: boolean
+        default: false
+      snapdir:
+        type: string
+        default: hidden
+      aclinherit:
+        type: string
+        default: restricted
+      canmount:
+        type: boolean
+      xattr:
+        type: boolean
+        default: true
+      copies:
+        type: int
+        default: 1
+      version:
+        type: int
+      utf8only:
+        type: boolean
+      normalization:
+        type: string
+      casesensitivity:
+        type: boolean
+      vscan:
+        type: boolean
+        default: false
+      nbmand:
+        type: boolean
+        default: false
+      sharesmb:
+        type: boolean
+        default: false
+      refquota:
+        type: int
+        default: 0
+      refreserveration:
+        type: int
+        default: 0
+      primarycache:
+        type: string
+        default: all
+      secondarycache:
+        type: string
+        default: all
+      usedbysnapshots:
+        type: int
+      usedbydataset:
+        type: int
+      usedbychildren:
+        type: int
+      usedbyreservation:
+        type: int
+      logbias:
+        type: string
+        default: latency
+      dedup:
+        type: boolean
+        default: false
+      mlslabel:
+        type: string
+        default: none
+      sync:
+        type: string
+        default: standard
+      refcompressratio:
+        type: string
+      written:
+        type: int
+      logicalused:
+        type: int
+      logicalreferenced:
+        type: int
+      filesystem_limit:
+        type: int
+      snapshot_limit:
+        type: int
+      filesystem_count:
+        type: int
+      snapdev:
+        type: string
+        default: hidden
+      acltype:
+        type: boolean
+        default: false
+      context:
+        type: string
+        default: none
+      fscontext:
+        type: string
+        default: none
+      defcontext:
+        type: string
+        default: none
+      rootcontext:
+        type: string
+        default: none
+      relatime:
+        type: boolean
+        default: false
+      redundant_metadata:
+        type: string
+        default: all
+      overlay:
+        type: boolean
+        default: false
