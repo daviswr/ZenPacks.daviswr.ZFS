@@ -1,10 +1,10 @@
 name: ZenPacks.daviswr.ZFS
 
 class_relationships:
-  - Products.ZenModel.Device.Device(zPools) 1:MC ZPool(server)
-  - ZPool(zRootVDevs) 1:MC ZRootDev(zPool)
-  - ZRootVDev(zVDevs) 1:MC ZVDev(zRootVDev)
-  - ZPool(zFS) 1:MC ZFS(zPool)
+  - Products.ZenModel.Device.Device(zpools) 1:MC ZPool(server)
+  - ZPool(zrootVDevs) 1:MC ZRootDev(zpool)
+  - ZRootVDev(zvdevs) 1:MC ZVDev(zrootVDev)
+  - ZPool(zfsComponents) 1:MC ZFSDataset(zpool)
 
 classes:
   DEFAULTS:
@@ -12,10 +12,113 @@ classes:
 
   ZPool:
     label: ZFS Storage Pool
+    # zpool get
+    # http://docs.oracle.com/cd/E19253-01/819-5461/gfifk/index.html
     properties:
       DEFAULTS:
         grid_display: false
         details_display: false
+      size:
+        label: Total Size
+        short_label: Size
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zpool_size
+      capacity:
+        label: Percent Used
+        short_label: Capacity
+        # percent
+        type: int
+      altroot:
+        label: Alternate Root
+        short_label: Alt Root
+        type: string
+      health:
+        label: Health
+        type: string
+      guid:
+        label: GUID
+        type: string
+      version:
+        label: Version
+        short_label: Ver
+        type: string
+      bootfs:
+        label: Bootable Dataset
+        short_label: Boot FS
+        type: string
+      delegation:
+        label: Delegation
+        type: boolean
+        default: true
+      autoreplace:
+        label: Automatic Device Replacement
+        short_label: Auto-Replace
+        type: boolean
+        default: false
+      cachefile:
+        label: Config Cache File
+        short_label: Cache
+        type: string
+      failmode:
+        label: Failure Mode
+        type: string
+        default: wait
+      listsnapshots:
+        label: List Snapshots
+        type: boolean
+        default: false
+      autoexpand:
+        label: Automatic Expansion
+        short_label: Auto-Expand
+        type: boolean
+        default: false
+      dedupditto:
+        label: Block Ditto Threshold
+        type: int
+        default: 0
+      dedupratio:
+        label: Dedup Ratio
+        type: float
+      free:
+        label: Free Space
+        short_label: Free
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zpool_free
+      allocated:
+        label: Allocated Space
+        short_label: Allocated
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zpool_allocated
+      readonly:
+        label: Read-Only
+        short_label: RO
+        type: boolean
+      #ashift:
+      #  type: int
+      #  default: 0
+      comment:
+        label: Comment
+        type: string
+      expandsize:
+        label: Uninitialized Space
+        short_label: Uninit
+        type: string
+      freeing:
+        label: Reclaimable Space
+        short_label: Reclaim
+        type: int
+        default: 0
+      fragmentation:
+        label: Fragmentation
+        short_label: Frag
+        type: float
+      #leaked:
+      #  label: Leaked
+      #  type: int
+      #  default: 0
 
   ZVDev:
     label: ZFS Virtual Device
@@ -32,169 +135,345 @@ classes:
         grid_display: false
 
   ZRootVDev:
-    base: ZVDev
+    base: [ZVDev]
     label: ZFS Root Virtual Device
 
-  ZFS:
-    base: Products.ZenModel.FileSystem.FileSystem
-    label: ZFS File System
+  ZFSDataset:
+    label: ZFS Dataset
     properties:
       DEFAULTS:
         grid_display: false
         details_display: false
+      # Unnecessary due to subclasses?
+      #type:
+      #  label: Dataset Type
+      #  short_label: Type
+      #  type: string
       creation:
-        # date? string?
-        type: int
-      used:
-        type: int
-      available:
-        type: int
-      referenced:
-        type: int
-      compressratio:
+        label: Creation Time
+        short_label: Created
+        # Convert from Unix time in modeler
         type: string
-      mounted:
-        type: boolean
-        default: true
-      quota:
+      used:
+        label: Used Space
+        short_label: Used
         type: int
+        renderer: Zenoss.render.bytesString
+      available:
+        label: Available Space
+        short_label: Available
+        type: int
+        renderer: Zenoss.render.bytesString
+      referenced:
+        label: Referenced Data
+        short_label: Referenced
+        type: int
+        renderer: Zenoss.render.bytesString
+      quota:
+        label: Space Quota
+        short_label: Quota
+        type: int
+        renderer: Zenoss.render.bytesString
         default: 0
       reservation:
+        label: Reservation
+        short_label: Reserved
         type: int
+        renderer: Zenoss.render.bytesString
         default: 0
-      recordsize:
-        type: int
-        default: 131072
-      mountpoint:
-        type: string
-      sharenfs:
-        type: boolean
-        default: false
       checksum:
-        type: boolean
-        default: true
+        label: Checksum
+        type: string
+        default: on
       compression:
-        type: boolean
-        default: false
+        label: Compression
+        type: string
+        default: off
       atime:
+        label: Access Time
+        short_label: atime
         type: boolean
         default: true
-      devices:
-        type: boolean
-        default: true
-      exec:
-        type: boolean
-        default: true
-      setuid:
-        type: boolean
-        default: true
-      readonly:
-        type: boolean
-        default: false
       zoned:
+        label: Non-Global Zone
+        short_label: Zoned
         type: boolean
         default: false
       snapdir:
+        label: Snapshot Directory
+        short_label: Snap Dir
         type: string
         default: hidden
       aclinherit:
+        label: ACL Inheritance
         type: string
         default: restricted
       canmount:
+        label: Mountable
         type: boolean
-      xattr:
-        type: boolean
-        default: true
       copies:
+        label: Data Copies
+        short_label: Copies
         type: int
         default: 1
-      version:
-        type: int
-      utf8only:
-        type: boolean
-      normalization:
-        type: string
-      casesensitivity:
-        type: boolean
       vscan:
-        type: boolean
-        default: false
-      nbmand:
-        type: boolean
-        default: false
-      sharesmb:
+        label: Virus Scan
         type: boolean
         default: false
       refquota:
+        label: Reference Quota
+        short_label: Ref Quota
         type: int
+        renderer: Zenoss.render.bytesString
         default: 0
       refreserveration:
+        label: Reference Reservation
+        short_label: Ref Reserved
         type: int
+        renderer: Zenoss.render.bytesString
         default: 0
       primarycache:
+        label: ARC
         type: string
         default: all
       secondarycache:
+        label: L2ARC
         type: string
         default: all
       usedbysnapshots:
+        label: Used by Snapshots
+        short_label: Used Snap
         type: int
+        renderer: Zenoss.render.bytesString
       usedbydataset:
+        label: Used by Dataset
+        short_label: Dataset Used
         type: int
+        renderer: Zenoss.render.bytesString
       usedbychildren:
+        label: Used by Children
+        short_label: Child Used
         type: int
-      usedbyreservation:
+        renderer: Zenoss.render.bytesString
+      usedbyrefreservation:
+        label: Used by Ref Reservation
+        short_label: Ref Used
         type: int
+        renderer: Zenoss.render.bytesString
       logbias:
+        label: Log Bias
         type: string
         default: latency
       dedup:
-        type: boolean
-        default: false
+        label: Deduplication
+        short_label: Dedup
+        type: string
+        default: off
       mlslabel:
+        label: Trused Ext Zone Label
+        short_label: Zone Label
         type: string
         default: none
       sync:
+        label: Synchronous Requests
+        short_label: Sync
         type: string
         default: standard
       refcompressratio:
-        type: string
+        label: Referenced Compression Ratio
+        short_label: Ref Compress
+        type: float
       written:
+        label: Reference Space Written
+        short_label: Written
         type: int
+        renderer: Zenoss.render.bytesString
       logicalused:
+        label: Logical Used Space
+        short_label: Logical Used
         type: int
+        renderer: Zenoss.render.bytesString
       logicalreferenced:
+        label: Logical Accessible Space
+        short_label: Logical Accessible
         type: int
+        renderer: Zenoss.render.bytesString
       filesystem_limit:
+        label: Maximum Filesystems
+        short_label: Max FS
         type: int
       snapshot_limit:
+        label: Maximum Snapshots
+        short_label: Max Snaps
         type: int
       filesystem_count:
+        label: Child Datasets
+        short_label: Children
         type: int
       snapdev:
+        label: Snapshot Devices
+        short_label: Snap Dev
         type: string
         default: hidden
       acltype:
-        type: boolean
-        default: false
-      context:
+        label: ACL Type
         type: string
-        default: none
-      fscontext:
-        type: string
-        default: none
-      defcontext:
-        type: string
-        default: none
-      rootcontext:
-        type: string
-        default: none
+        default: noacl
       relatime:
+        label: Relative Access Time
+        short_label: relatime
         type: boolean
         default: false
       redundant_metadata:
+        label: Redundant Metadata
         type: string
         default: all
-      overlay:
+      snapshot_count:
+        label: Snapshots
+        type: int
+
+      
+  ZFSVolume:
+    base: [ZFSDataset]
+    label: ZFS Volume
+    properties:
+      compressratio:
+        label: Compression Ratio
+        short_label: Compress
+        type: float
+      origin:
+        label: Origin Snapshot
+        short_label: Origin
+        type: string
+      volblocksize:
+        label: Block Size
+        short_label: Block
+        type: int
+        default: 8192
+      shareisci:
+        label: iSCSI Target
+        short_label: iSCSI
+        type: string
+        default: off
+      volsize:
+        label: Logical Size
+        short_label: Vol Size
+        type: int
+        renderer: Zenoss.render.bytesString
+
+  ZFS:
+    base: [ZFSDataset]
+    label: ZFS File System
+    properties:
+      compressratio:
+        label: Compression Ratio
+        short_label: Compress
+        type: float
+      mounted:
+        label: Mounted
+        type: boolean
+        default: true
+      origin:
+        label: Origin Snapshot
+        short_label: Origin
+        type: string
+      devices:
+        label: Device Nodes
+        short_label: Devices
+        type: boolean
+        default: true
+      exec:
+        label: Execution
+        short_label: Exec
+        type: boolean
+        default: true
+      mountpoint:
+        label: Mount Point
+        short_label: Path
+        type: string
+      nbmand:
+        label: Non-Blocking Mandatory Locks
         type: boolean
         default: false
+      recordsize:
+        label: Block Size
+        short_label: Block
+        type: int
+        default: 131072
+      setiud:
+        label: Set UID
+        type: boolean
+        default: true
+      sharesmb:
+        label: SMB Share
+        short_label: SMB
+        type: string
+        default: off
+      sharenfs:
+        label: NFS Share
+        short_label: NFS
+        type: string
+        default: off 
+      version:
+        label: Version
+        short_label: Ver
+        type: string
+      xattr:
+        label: Extended Attributes
+        short_label: XAttr
+        type: string
+        default: on
+      casesensitivity:
+        label: Case Sensitivity
+        short_label: Case
+        type: string
+        default: sensitive
+      normalization:
+        label: Unicode Normalization
+        type: string
+        default: none
+      utf8only:
+        label: UTF-8 Only
+        short_label: UTF8
+        type: boolean
+        default: false
+      context:
+        label: SELinux File Context
+        short_label: File Context
+        type: string
+        default: none
+      fscontext:
+        label: SELinux Filesystem Context
+        short_label: FS Context
+        type: string
+        default: none
+      defcontext:
+        label: SELinux Default Context
+        short_label: Default Context
+        type: string
+        default: none
+      rootcontext:
+        label: SELinux Root Inode Context
+        short_label: Root Inode Context
+        type: string
+        default: none
+      overlay:
+        label: Overlay Mount
+        short_label: Overlay
+        type: boolean
+        default: false
+
+  ZFSSnap:
+    base: [ZFSDataset]
+    label: ZFS Snapshot
+    properties:
+      clones:
+        label: Clones
+        type: string
+      defer_destroy:
+        label: Deferred Destruction
+        type: boolean
+        default: false
+      userrefs:
+        label: User Holds
+        type: int
