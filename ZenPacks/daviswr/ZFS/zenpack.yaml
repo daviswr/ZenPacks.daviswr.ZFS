@@ -592,7 +592,7 @@ device_classes:
               fragmentation: GAUGE
               free: GAUGE
           zpool-iostat:
-            commandTemplate: "/usr/bin/sudo /zbin/zpool iostat -vg"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -vg"
             parser: ZenPacks.daviswr.ZFS.iostat
             datapoints:
               bw-read: DERIVE_MIN_0
