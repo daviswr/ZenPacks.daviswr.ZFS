@@ -1,3 +1,4 @@
+# TODO; Paths for sudo, zpool, & zfs on Illumos/Solaris and FreeBSD
 name: ZenPacks.daviswr.ZFS
 
 class_relationships:
@@ -13,66 +14,58 @@ classes:
   ZPool:
     label: ZFS Storage Pool
     # zpool get
-    # http://docs.oracle.com/cd/E19253-01/819-5461/gfifk/index.html
     properties:
       DEFAULTS:
         grid_display: false
         details_display: false
-      size:
-        label: Total Size
-        short_label: Size
+      allocated:
+        label: Allocated Space
+        short_label: Allocated
         type: int
         renderer: Zenoss.render.bytesString
-        datapoint: zpool_size
-      capacity:
-        label: Percent Used
-        short_label: Capacity
-        # percent
-        type: int
+        datapoint: zpool-get_allocated
+        grid_display: true
+        details_display: true
       altroot:
         label: Alternate Root
         short_label: Alt Root
         type: string
-      health:
-        label: Health
-        type: string
-      guid:
-        label: GUID
-        type: string
-      version:
-        label: Version
-        short_label: Ver
-        type: string
-      bootfs:
-        label: Bootable Dataset
-        short_label: Boot FS
-        type: string
-      delegation:
-        label: Delegation
-        type: boolean
-        default: true
-      autoreplace:
-        label: Automatic Device Replacement
-        short_label: Auto-Replace
-        type: boolean
-        default: false
-      cachefile:
-        label: Config Cache File
-        short_label: Cache
-        type: string
-      failmode:
-        label: Failure Mode
-        type: string
-        default: wait
-      listsnapshots:
-        label: List Snapshots
-        type: boolean
-        default: false
+      #ashift:
+      #  type: int
+      #  default: 0
       autoexpand:
         label: Automatic Expansion
         short_label: Auto-Expand
         type: boolean
         default: false
+        details_display: true
+      autoreplace:
+        label: Automatic Device Replacement
+        short_label: Auto-Replace
+        type: boolean
+        default: false
+        details_display: true
+      bootfs:
+        label: Bootable Dataset
+        short_label: Boot FS
+        type: string
+      cachefile:
+        label: Config Cache File
+        short_label: Cache
+        type: string
+        details_display: true
+      capacity:
+        label: Percent Used
+        short_label: Capacity
+        # percent
+        type: int
+        datapoint: zpool-get_capacity
+        grid_display: true
+        details_display: true
+      comment:
+        label: Comment
+        type: string
+        details_display: true
       dedupditto:
         label: Block Ditto Threshold
         type: int
@@ -80,45 +73,76 @@ classes:
       dedupratio:
         label: Dedup Ratio
         type: float
+        datapoint: zpool-get_dedupratio
+        grid_display: true
+        details_display: true
+      delegation:
+        label: Delegation
+        type: boolean
+        default: true
+      expandsize:
+        label: Uninitialized Space
+        short_label: Uninit
+        type: string
+        details_display: true
+      failmode:
+        label: Failure Mode
+        type: string
+        default: wait
+      fragmentation:
+        label: Fragmentation
+        short_label: Frag
+        type: float
+        datapoint: zpool-get_fragmentation
+        grid_display: true
+        details_display: true
       free:
         label: Free Space
         short_label: Free
         type: int
         renderer: Zenoss.render.bytesString
-        datapoint: zpool_free
-      allocated:
-        label: Allocated Space
-        short_label: Allocated
-        type: int
-        renderer: Zenoss.render.bytesString
-        datapoint: zpool_allocated
-      readonly:
-        label: Read-Only
-        short_label: RO
-        type: boolean
-      #ashift:
-      #  type: int
-      #  default: 0
-      comment:
-        label: Comment
-        type: string
-      expandsize:
-        label: Uninitialized Space
-        short_label: Uninit
-        type: string
+        datapoint: zpool-get_free
+        grid_display: true
+        details_display: true
       freeing:
         label: Reclaimable Space
         short_label: Reclaim
         type: int
         default: 0
-      fragmentation:
-        label: Fragmentation
-        short_label: Frag
-        type: float
+      guid:
+        label: GUID
+        type: string
+      health:
+        label: Health
+        type: string
+        grid_display: true
+        details_display: true
       #leaked:
       #  label: Leaked
       #  type: int
       #  default: 0
+      listsnapshots:
+        label: List Snapshots
+        type: boolean
+        default: false
+      readonly:
+        label: Read-Only
+        short_label: RO
+        type: boolean
+        grid_display: true
+        details_display: true
+      size:
+        label: Total Size
+        short_label: Size
+        type: int
+        renderer: Zenoss.render.bytesString
+        grid_display: true
+        details_display: true
+      version:
+        label: Version
+        short_label: Ver
+        type: string
+        details_display: true
 
   ZVDev:
     label: ZFS Virtual Device
@@ -128,9 +152,11 @@ classes:
       vDevType:
         label: vDev Type
         short_label: Type
-        # disk, file, spare, log, cache
+        # mirror, raidz, disk/file, spare, log, cache
+        type: string
         default: file
       GUID:
+        # Component ID
         label: GUID
         grid_display: false
 
@@ -139,244 +165,302 @@ classes:
     label: ZFS Root Virtual Device
 
   ZFSDataset:
+    # zfs get
     label: ZFS Dataset
     properties:
       DEFAULTS:
         grid_display: false
         details_display: false
-      # Unnecessary due to subclasses?
-      #type:
-      #  label: Dataset Type
-      #  short_label: Type
-      #  type: string
-      creation:
-        label: Creation Time
-        short_label: Created
-        # Convert from Unix time in modeler
+      zDsType:
+        label: Dataset Type
         type: string
-      used:
-        label: Used Space
-        short_label: Used
-        type: int
-        renderer: Zenoss.render.bytesString
+        default: Dataset
+      aclinherit:
+        label: ACL Inheritance
+        type: string
+        default: restricted
+      acltype:
+        label: ACL Type
+        type: string
+        default: noacl
       available:
         label: Available Space
         short_label: Available
         type: int
         renderer: Zenoss.render.bytesString
-      referenced:
-        label: Referenced Data
-        short_label: Referenced
-        type: int
-        renderer: Zenoss.render.bytesString
-      quota:
-        label: Space Quota
-        short_label: Quota
-        type: int
-        renderer: Zenoss.render.bytesString
-        default: 0
-      reservation:
-        label: Reservation
-        short_label: Reserved
-        type: int
-        renderer: Zenoss.render.bytesString
-        default: 0
+        datapoint: zfs-get_available
+        grid_display: true
+        details_display: true
+      atime:
+        label: Access Time
+        short_label: atime
+        type: boolean
+        default: true
+      canmount:
+        label: Mountable
+        type: boolean
       checksum:
         label: Checksum
         type: string
         default: on
       compression:
         label: Compression
+        short_label: Compress
         type: string
         default: off
-      atime:
-        label: Access Time
-        short_label: atime
-        type: boolean
-        default: true
-      zoned:
-        label: Non-Global Zone
-        short_label: Zoned
-        type: boolean
-        default: false
-      snapdir:
-        label: Snapshot Directory
-        short_label: Snap Dir
-        type: string
-        default: hidden
-      aclinherit:
-        label: ACL Inheritance
-        type: string
-        default: restricted
-      canmount:
-        label: Mountable
-        type: boolean
+        details_display: true
       copies:
         label: Data Copies
         short_label: Copies
         type: int
         default: 1
-      vscan:
-        label: Virus Scan
-        type: boolean
-        default: false
+        details_display: true
+      creation:
+        label: Creation Time
+        short_label: Created
+        # Convert from Unix time in modeler
+        type: string
+        details_display: true
+      dedup:
+        label: Deduplication
+        short_label: Dedup
+        type: string
+        default: off
+        details_display: true
+      filesystem_count:
+        label: Child Datasets
+        short_label: Children
+        type: int
+        details_display: true
+      filesystem_limit:
+        label: Maximum Filesystems
+        short_label: Max FS
+        type: int
+      logbias:
+        label: Log Bias
+        type: string
+        default: latency
+      logicalreferenced:
+        label: Logical Accessible Space
+        short_label: Logical Accessible
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_logicalreferenced
+        details_display: true
+      logicalused:
+        label: Logical Used Space
+        short_label: Logical Used
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_logicalused
+        details_display: true
+      mlslabel:
+        label: Trused Ext Zone Label
+        short_label: Zone Label
+        type: string
+        default: none
+      primarycache:
+        label: ARC
+        type: string
+        default: all
+        details_display: true
+      quota:
+        label: Space Quota
+        short_label: Quota
+        type: int
+        renderer: Zenoss.render.bytesString
+        default: 0
+        details_display: true
+      redundant_metadata:
+        label: Redundant Metadata
+        type: string
+        default: all
+        details_display: true
+      refcompressratio:
+        label: Referenced Compression Ratio
+        short_label: Ref Compress
+        type: float
+        details_display: true
+      referenced:
+        label: Referenced Data
+        short_label: Referenced
+        type: int
+        renderer: Zenoss.render.bytesString
+        details_display: true
       refquota:
         label: Reference Quota
         short_label: Ref Quota
         type: int
         renderer: Zenoss.render.bytesString
         default: 0
+        details_display: true
       refreserveration:
         label: Reference Reservation
         short_label: Ref Reserved
         type: int
         renderer: Zenoss.render.bytesString
         default: 0
-      primarycache:
-        label: ARC
-        type: string
-        default: all
-      secondarycache:
-        label: L2ARC
-        type: string
-        default: all
-      usedbysnapshots:
-        label: Used by Snapshots
-        short_label: Used Snap
-        type: int
-        renderer: Zenoss.render.bytesString
-      usedbydataset:
-        label: Used by Dataset
-        short_label: Dataset Used
-        type: int
-        renderer: Zenoss.render.bytesString
-      usedbychildren:
-        label: Used by Children
-        short_label: Child Used
-        type: int
-        renderer: Zenoss.render.bytesString
-      usedbyrefreservation:
-        label: Used by Ref Reservation
-        short_label: Ref Used
-        type: int
-        renderer: Zenoss.render.bytesString
-      logbias:
-        label: Log Bias
-        type: string
-        default: latency
-      dedup:
-        label: Deduplication
-        short_label: Dedup
-        type: string
-        default: off
-      mlslabel:
-        label: Trused Ext Zone Label
-        short_label: Zone Label
-        type: string
-        default: none
-      sync:
-        label: Synchronous Requests
-        short_label: Sync
-        type: string
-        default: standard
-      refcompressratio:
-        label: Referenced Compression Ratio
-        short_label: Ref Compress
-        type: float
-      written:
-        label: Reference Space Written
-        short_label: Written
-        type: int
-        renderer: Zenoss.render.bytesString
-      logicalused:
-        label: Logical Used Space
-        short_label: Logical Used
-        type: int
-        renderer: Zenoss.render.bytesString
-      logicalreferenced:
-        label: Logical Accessible Space
-        short_label: Logical Accessible
-        type: int
-        renderer: Zenoss.render.bytesString
-      filesystem_limit:
-        label: Maximum Filesystems
-        short_label: Max FS
-        type: int
-      snapshot_limit:
-        label: Maximum Snapshots
-        short_label: Max Snaps
-        type: int
-      filesystem_count:
-        label: Child Datasets
-        short_label: Children
-        type: int
-      snapdev:
-        label: Snapshot Devices
-        short_label: Snap Dev
-        type: string
-        default: hidden
-      acltype:
-        label: ACL Type
-        type: string
-        default: noacl
+        details_display: true
       relatime:
         label: Relative Access Time
         short_label: relatime
         type: boolean
         default: false
-      redundant_metadata:
-        label: Redundant Metadata
+      reservation:
+        label: Reservation
+        short_label: Reserved
+        type: int
+        renderer: Zenoss.render.bytesString
+        default: 0
+        grid_display: true
+        details_display: true
+      secondarycache:
+        label: L2ARC
         type: string
         default: all
+        details_display: true
+      snapdev:
+        label: Snapshot Devices
+        short_label: Snap Dev
+        type: string
+        default: hidden
+      snapdir:
+        label: Snapshot Directory
+        short_label: Snap Dir
+        type: string
+        default: hidden
       snapshot_count:
         label: Snapshots
         type: int
-
+        details_display: true
+      snapshot_limit:
+        label: Maximum Snapshots
+        short_label: Max Snaps
+        type: int
+      sync:
+        label: Synchronous Requests
+        short_label: Sync
+        type: string
+        default: standard
+      used:
+        label: Used Space
+        short_label: Used
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_used
+        grid_display: true
+        details_display: true
+      usedbychildren:
+        label: Used by Children
+        short_label: Child Used
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_usedbychildren
+        details_display: true
+      usedbydataset:
+        label: Used by Dataset
+        short_label: Dataset Used
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_usedbydataset
+        details_display: true
+      usedbyrefreservation:
+        label: Used by Ref Reservation
+        short_label: Ref Used
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_usedbyrefreservation
+        details_display: true
+      usedbysnapshots:
+        label: Used by Snapshots
+        short_label: Used Snap
+        type: int
+        renderer: Zenoss.render.bytesString
+        datapoint: zfs-get_usedbysnapshots
+        details_display: true
+      vscan:
+        label: Virus Scan
+        type: boolean
+        default: false
+        details_display: true
+      written:
+        label: Reference Space Written
+        short_label: Written
+        type: int
+        renderer: Zenoss.render.bytesString
+        details_display: true
+      zoned:
+        label: Non-Global Zone
+        short_label: Zoned
+        type: boolean
+        default: false
+        details_display: true
       
-  ZFSVolume:
+  ZFSVol:
     base: [ZFSDataset]
     label: ZFS Volume
     properties:
+      zDsType:
+        label: Dataset Type
+        type: string
+        default: Volume
       compressratio:
         label: Compression Ratio
         short_label: Compress
         type: float
+        details_display: true
       origin:
         label: Origin Snapshot
         short_label: Origin
         type: string
-      volblocksize:
-        label: Block Size
-        short_label: Block
-        type: int
-        default: 8192
+        details_display: true
       shareisci:
         label: iSCSI Target
         short_label: iSCSI
         type: string
         default: off
+        details_display: true
+      volblocksize:
+        label: Block Size
+        short_label: Block
+        type: int
+        default: 8192
       volsize:
         label: Logical Size
         short_label: Vol Size
         type: int
         renderer: Zenoss.render.bytesString
+        grid_display: true
+        details_display: true
 
   ZFS:
     base: [ZFSDataset]
     label: ZFS File System
     properties:
+      zDsType:
+        label: Dataset Type
+        type: string
+        default: File System
+      casesensitivity:
+        label: Case Sensitivity
+        short_label: Case
+        type: string
+        default: sensitive
       compressratio:
         label: Compression Ratio
         short_label: Compress
         type: float
-      mounted:
-        label: Mounted
-        type: boolean
-        default: true
-      origin:
-        label: Origin Snapshot
-        short_label: Origin
+        details_display: true
+      context:
+        label: SELinux File Context
+        short_label: File Context
         type: string
+        default: none
+      defcontext:
+        label: SELinux Default Context
+        short_label: Default Context
+        type: string
+        default: none
       devices:
         label: Device Nodes
         short_label: Devices
@@ -387,12 +471,37 @@ classes:
         short_label: Exec
         type: boolean
         default: true
+      fscontext:
+        label: SELinux Filesystem Context
+        short_label: FS Context
+        type: string
+        default: none
+      mounted:
+        label: Mounted
+        type: boolean
+        default: true
       mountpoint:
         label: Mount Point
         short_label: Path
         type: string
+        grid_display: true
+        details_display: true
       nbmand:
         label: Non-Blocking Mandatory Locks
+        type: boolean
+        default: false
+      normalization:
+        label: Unicode Normalization
+        type: string
+        default: none
+      origin:
+        label: Origin Snapshot
+        short_label: Origin
+        type: string
+        details_display: true
+      overlay:
+        label: Overlay Mount
+        short_label: Overlay
         type: boolean
         default: false
       recordsize:
@@ -400,76 +509,58 @@ classes:
         short_label: Block
         type: int
         default: 131072
-      setiud:
-        label: Set UID
-        type: boolean
-        default: true
-      sharesmb:
-        label: SMB Share
-        short_label: SMB
-        type: string
-        default: off
-      sharenfs:
-        label: NFS Share
-        short_label: NFS
-        type: string
-        default: off 
-      version:
-        label: Version
-        short_label: Ver
-        type: string
-      xattr:
-        label: Extended Attributes
-        short_label: XAttr
-        type: string
-        default: on
-      casesensitivity:
-        label: Case Sensitivity
-        short_label: Case
-        type: string
-        default: sensitive
-      normalization:
-        label: Unicode Normalization
-        type: string
-        default: none
-      utf8only:
-        label: UTF-8 Only
-        short_label: UTF8
-        type: boolean
-        default: false
-      context:
-        label: SELinux File Context
-        short_label: File Context
-        type: string
-        default: none
-      fscontext:
-        label: SELinux Filesystem Context
-        short_label: FS Context
-        type: string
-        default: none
-      defcontext:
-        label: SELinux Default Context
-        short_label: Default Context
-        type: string
-        default: none
       rootcontext:
         label: SELinux Root Inode Context
         short_label: Root Inode Context
         type: string
         default: none
-      overlay:
-        label: Overlay Mount
-        short_label: Overlay
+      setiud:
+        label: Set UID
+        type: boolean
+        default: true
+      sharenfs:
+        label: NFS Share
+        short_label: NFS
+        type: string
+        default: off
+        grid_display: true
+        details_display: true
+      sharesmb:
+        label: SMB Share
+        short_label: SMB
+        type: string
+        default: off
+        grid_display: true
+        details_display: true
+      version:
+        label: Version
+        short_label: Ver
+        type: string
+        details_display: true
+      utf8only:
+        label: UTF-8 Only
+        short_label: UTF8
         type: boolean
         default: false
+      xattr:
+        label: Extended Attributes
+        short_label: XAttr
+        type: string
+        default: on
+        details_display: true
 
   ZFSSnap:
     base: [ZFSDataset]
     label: ZFS Snapshot
     properties:
+      zDsType:
+        label: Dataset Type
+        type: string
+        default: Snapshot
       clones:
         label: Clones
         type: string
+        details_display: true
       defer_destroy:
         label: Deferred Destruction
         type: boolean
@@ -477,3 +568,215 @@ classes:
       userrefs:
         label: User Holds
         type: int
+
+
+device_classes:
+  /:
+    remove: false
+    templates:
+      ZPool:
+        targetPythonClass: ZenPacks.daviswr.ZFS.ZPool
+        datasources:
+          DEFAULTS:
+            type: COMMAND
+            usessh: true
+            cycletime: 60
+            component: "${here/id}"
+          zpool-get:
+            commandTemplate: "/usr/bin/sudo /sbin/zpool get -pH all"
+            parser: ZenPacks.daviswr.ZFS.get
+            datapoints:
+              allocated: GAUGE
+              capacity: GAUGE
+              dedupratio: GAUGE
+              fragmentation: GAUGE
+              free: GAUGE
+          zpool-iostat:
+            commandTemplate: "/usr/bin/sudo /zbin/zpool iostat -vg"
+            parser: ZenPacks.daviswr.ZFS.iostat
+            datapoints:
+              bw-read: DERIVE_MIN_0
+              bw-write: DERIVE_MIN_0
+              op-read: DERIVE_MIN_0
+              op-write: DERIVE_MIN_0
+        graphs:
+          DEFAULTS:
+            miny: 0
+          Capacity:
+            units: bytes
+            base: true
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Allocated:
+                dpName: zpool-get_allocated
+                colorindex: 0
+              Free:
+                dpName: zpool-get_free
+                color: cccccc
+          Percent Capacity:
+            units: percentage
+            graphpoints:
+              Used:
+                dpName: zpool-get_capacity
+                lineType: LINE
+                lineWidth: 2
+                colorindex: 0
+          Fragmentation:
+            units: percentage
+            graphpoints:
+              Fragmentation:
+                dpName: zpool-get_fragmentation
+                lineType: LINE
+                lineWidth: 2
+                colorindex: 0
+          Dedup Ratio:
+            units: ratio
+            graphpoints:
+              Dedup:
+                dpName: zpool-get_dedupratio
+                lineType: LINE
+                lineWidth: 2
+                colorindex: 2
+          Activity:
+            units: IOPS
+            graphpoints:
+              Writes:
+                dpName: zpool-iostat_op-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Reads:
+                dpName: zpool-iostat_op-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+          Throughput:
+            units: bytes/sec
+            base: true
+            graphpoints:
+              Written:
+                dpName: zpool-iostat_bw-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Read:
+                dpName: zpool-iostat_bw-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+
+      ZVDev:
+        targetPythonClass: ZenPacks.daviswr.ZVDev
+        datasources:
+          zpool-iostat:
+            type: COMMAND
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -vg"
+            parser: ZenPacks.daviswr.ZFS.iostat
+            cycletime: 60
+            component: "${here/id}"
+            datapoints:
+              bw-read: DERIVE_MIN_0
+              bw-write: DERIVE_MIN_0
+              op-read: DERIVE_MIN_0
+              op-write: DERIVE_MIN_0
+        graphs:
+          DEFAULTS:
+            miny: 0
+          Activity:
+            units: IOPS
+            graphpoints:
+              Writes:
+                dpName: zpool-iostat_op-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Reads:
+                dpName: zpool-iostat_op-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+          Throughput:
+            units: bytes/sec
+            base: true
+            graphpoints:
+              Written:
+                dpName: zpool-iostat_bw-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Read:
+                dpName: zpool-iostat_bw-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+
+      ZFSDataset:
+        targetPythonClass: ZenPacks.daviswr.ZFS.ZFSDataset
+        datasources:
+          zfs-get:
+            type: COMMAND
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all"
+            parser: ZenPacks.daviswr.ZFS.get
+            cycletime: 60
+            component: "${here/id}"
+            datapoints:
+              available: GAUGE
+              logicalreferenced: GAUGE
+              logicalused: GAUGE
+              used: GAUGE
+              usedbychildren: GAUGE
+              usedbydataset: GAUGE
+              usedbyrefreservation: GAUGE
+              usedbysnapshots: GAUGE
+        graphs:
+          DEFAULTS:
+            miny: 0
+            units: bytes
+            base: true
+          Capacity:
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Used:
+                dpName: zfs-get_used
+                colorindex: 0
+              Available:
+                dpName: zfs-get_available
+                color: cccccc
+          Used By:
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Children:
+                dpName: zfs-get_usedbychildren
+                colorindex: 0
+              Reference:
+                dpName: zfs-get_usedbyrefreservation
+                colorindex: 1
+              Snapshots:
+                dpName: zfs-get_usedbysnapshots
+                colorindex: 2
+              Dataset:
+                dpName: zfs-get_usedbydataset
+                lineType: LINE
+                lineWidth: 1
+                color: 000000
+          Logical Capacity:
+            # TODO: work out stacking, RPN, etc
+            graphpoints:
+              Used:
+                dpName: zfs-get_logicalused
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Accessible:
+                dpName: zfs-get_logicalreferenced
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
