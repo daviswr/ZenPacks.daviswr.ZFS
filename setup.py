@@ -5,7 +5,7 @@
 NAME = "ZenPacks.daviswr.ZFS"
 VERSION = "0.1.0"
 AUTHOR = "Wes Davis"
-LICENSE = ""
+LICENSE = "MIT"
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.daviswr']
 PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.ZFS']
 INSTALL_REQUIRES = []
