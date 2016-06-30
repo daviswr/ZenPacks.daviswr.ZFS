@@ -90,13 +90,13 @@ class ZPool(CommandPlugin):
         # Bring vDev GUIDs and names together, using the indexes
         for pool in vdev_idx:
             vdevs[pool] = dict()
-			for root in vdev_idx[pool]:
+            for root in vdev_idx[pool]:
                 rguid = root_guids[root]
-				rname = root_names[root]
+                rname = root_names[root]
                 vdevs[pool][rguid] = dict()
-				vdevs[pool][rguid]['name'] = rname
-				vdevs[pool][rguid]['vdevs'] = dict()
-				for dev in vdev_idx[pool][root]:
+                vdevs[pool][rguid]['name'] = rname
+                vdevs[pool][rguid]['vdevs'] = dict()
+                for dev in vdev_idx[pool][root]:
                     dguid = vdev_guids[dev]
-					dname = vdev_names[dev]
-					vdevs[pool][rguid]['vdevs'][dguid] = dname
+                    dname = vdev_names[dev]
+                    vdevs[pool][rguid]['vdevs'][dguid] = dname
