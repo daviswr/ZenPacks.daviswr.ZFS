@@ -57,7 +57,7 @@ class ZPool(CommandPlugin):
             # An OrderedDict might be a *lot* better for this
             elif root_vdev_match:
                 root_vdev = root_vdev_match.group(dev)
-                if re.match(r'[a-zA-z]', root_vdev):
+                if re.match(r'[a-zA-Z]', root_vdev):
                     # mirror, raid, etc
                     if not root_names.__contains__(root_vdev):
                         root_names.append(root_vdev)
@@ -73,7 +73,7 @@ class ZPool(CommandPlugin):
 
             elif vdev_match:
                 vdev = vdev_match.group('dev')
-                if re.match(r'[a-zA-z]', vdev):
+                if re.match(r'[a-zA-Z]', vdev):
                     # device name
                     if not vdev_names.__contains__(vdev):
                         vdev_names.append(vdev)
