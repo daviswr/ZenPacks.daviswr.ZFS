@@ -34,19 +34,19 @@ class ZPool(CommandPlugin):
             vdev_match = re.match(r'^\s{4}' + iostat_regex, line)
 
             if get_match:
-                pool = get_match.group(pool)
-                key = get_match.group(key)
-                value = get_match.group(value)
+                pool = get_match.group('pool')
+                key = get_match.group('key')
+                value = get_match.group('value')
                 if not pools.has_key(pool):
                     pools.update({pool: dict()})
                 # Clean up percentages and ratios
                 if value.endswith('%') \
-                    or re.match(r'^\d+\.\d{2}x$')
+                    or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 pools[pool].update({key: value})
 
             elif pool_match:
-                pool = pool_match.group(dev)
+                pool = pool_match.group('dev')
                 last_pool = pool
                 if not vdev_idx.has_key(pool):
                     vdev_idx[pool] = dict()
@@ -56,36 +56,30 @@ class ZPool(CommandPlugin):
             # so we can sort through them later.
             # An OrderedDict might be a *lot* better for this
             elif root_vdev_match:
-                root_vdev = root_vdev_match.group(dev)
+                root_vdev = root_vdev_match.group('dev')
                 if re.match(r'[a-zA-Z]', root_vdev):
                     # mirror, raid, etc
-                    if not root_names.__contains__(root_vdev):
-                        root_names.append(root_vdev)
-                    idx = len(root_names) - 1
-                    last_root = idx
-                    if vdev_idx.has_key(last_pool) \
-                        and not vdev_idx[last_pool].has_key(idx):
-                        vdev_idx[last_pool][idx] = list()
+                    root_names.append(root_vdev)
                 else:
                     # GUID
-                    if not root_guids.__contains__(root_vdev):
-                        root_guids.append(root_vdev)
+                    root_guids.append(root_vdev)
+                    idx = len(root_guids) - 1
+                    last_root = idx
+                    if vdev_idx.has_key(last_pool):
+                        vdev_idx[last_pool][idx] = list()
 
             elif vdev_match:
                 vdev = vdev_match.group('dev')
                 if re.match(r'[a-zA-Z]', vdev):
                     # device name
-                    if not vdev_names.__contains__(vdev):
-                        vdev_names.append(vdev)
-                    idx = len(vdev_names) - 1
-                    if vdev_idx.has_key(last_pool) \
-                        and vdev_idx[last_pool].has_key(last_root) \
-                        and not vdev_idx[last_pool][last_root].__contains__(idx):
-                        vdev_idx[last_pool][last_root].append(idx)
+                    vdev_names.append(vdev)
                 else:
                     # GUID
-                    if not vdev_guids.__contains__(vdev):
-                        vdev_guids.append(vdev)
+                    vdev_guids.append(vdev)
+                    idx = len(vdev_guids) - 1
+                    if vdev_idx.has_key(last_pool) \
+                        and vdev_idx[last_pool].has_key(last_root):
+                        vdev_idx[last_pool][last_root].append(idx)
 
         # Bring vDev GUIDs and names together, using the indexes
         for pool in vdev_idx:
