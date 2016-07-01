@@ -94,3 +94,89 @@ class ZPool(CommandPlugin):
                     dguid = vdev_guids[dev]
                     dname = vdev_names[dev]
                     vdevs[pool][rguid]['vdevs'][dguid] = dname
+
+        booleans = [
+            'autoexpand',
+            'autoreplace',
+            'delegation',
+            'listsnapshots',
+            'readonly',
+            ]
+
+        ints = [
+            'allocated',
+            'capacity',
+            'dedupditto',
+            'free',
+            'freeing',
+            'size',
+            ]
+
+        floats = [
+            'dedupratio',
+            'fragmentation',
+            ]
+
+        rm = RelationshipMap(
+            relname='zpool',
+            modname='ZenPacks.daviswr.ZFS.ZPool'
+            )
+
+        # Pool components
+		for pool in pools:
+            comp = dict()
+            comp['id'] = self.prepId(pool)
+			comp['title'] = pool
+            for key in pools[pool]:
+                if key in booleans:
+                    comp[key] = True if ('on' == pools[pool][key]) else False
+                elif key in ints:
+                    comp[key] = int(pools[pool][key])
+                elif key in floats:
+                    comp[key] = float(pools[pool][key])
+                else:
+                    comp[key] = pools[pool][key]
+            rm.append(ObjectMap(
+                modname='ZenPacks.daviswr.ZFS.ZPool',
+                data=comp
+                ))
+        maps.append(rm)
+
+        # vDev components
+        for pool in vdevs:
+            root_rm = RelationshipMap(
+                compname='zpools/{}'.format(pool),
+                relname='zrootVDevs',
+                modname='ZenPacks.daviswr.ZFS.ZRootVDev',
+                )
+            for root in vdevs[pool]:
+                comp = dict()
+                comp['id'] = self.prepId(root)
+                comp['title'] = vdevs[pool][root]['name']
+                comp['GUID'] = root
+                if comp['title'] in ['mirror', 'spare', 'log', 'cache'] \
+                    comp['title'].startswith('raidz'):
+                    comp['vDevType'] = comp['title']
+                root_rm.append(ObjectMap(
+                    modname='ZenPacks.daviswr.ZFS.ZRootVDev',
+                    data=comp
+                    ))
+                vdev_rm = RelationshipMap(
+                    compname='zpools/{0}/zrootVDevs/{1}/'.format(pool,root),
+                    relname='zvdevs',
+                    modname='ZenPacks.daviswr.ZFS.ZVDev'
+                    ))
+                for dev in vdevs[pool][root]['vdevs']:
+                    comp = {
+                        'id': self.prepId(dev),
+                        'title': vdevs[pool][root]['vdevs'][dev],
+                        'GUID': dev
+                        }
+                     vdev_rm.append(ObjectMap(
+                         modname='ZenPacks.daviswr.ZFS.ZVDev',
+                         data=comp
+                         ))
+                root_rm.append(vdev_rm)
+            maps.append(root_rm)
+
+        return maps
