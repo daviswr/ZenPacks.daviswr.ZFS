@@ -123,7 +123,7 @@ class ZPool(CommandPlugin):
             )
 
         # Pool components
-		for pool in pools:
+        for pool in pools:
             comp = dict()
             comp['id'] = self.prepId(pool)
 			comp['title'] = pool
@@ -143,11 +143,12 @@ class ZPool(CommandPlugin):
         maps.append(rm)
 
         # vDev components
+		# Can RelMaps be nested like this?
         for pool in vdevs:
             root_rm = RelationshipMap(
                 compname='zpools/{}'.format(pool),
                 relname='zrootVDevs',
-                modname='ZenPacks.daviswr.ZFS.ZRootVDev',
+                modname='ZenPacks.daviswr.ZFS.ZRootVDev'
                 )
             for root in vdevs[pool]:
                 comp = dict()
@@ -155,7 +156,7 @@ class ZPool(CommandPlugin):
                 comp['title'] = vdevs[pool][root]['name']
                 comp['GUID'] = root
                 if comp['title'] in ['mirror', 'spare', 'log', 'cache'] \
-                    comp['title'].startswith('raidz'):
+                    or comp['title'].startswith('raidz'):
                     comp['vDevType'] = comp['title']
                 root_rm.append(ObjectMap(
                     modname='ZenPacks.daviswr.ZFS.ZRootVDev',
