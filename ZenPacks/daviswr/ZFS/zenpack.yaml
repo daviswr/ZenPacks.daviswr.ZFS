@@ -1,11 +1,10 @@
-# TODO; Paths for sudo, zpool, & zfs on Illumos/Solaris and FreeBSD
 name: ZenPacks.daviswr.ZFS
 
 class_relationships:
   - Products.ZenModel.Device.Device(zpools) 1:MC ZPool(server)
   - ZPool(zrootVDevs) 1:MC ZRootDev(zpool)
   - ZRootVDev(zvdevs) 1:MC ZVDev(zrootVDev)
-  - ZPool(zfsComponents) 1:MC ZFSDataset(zpool)
+  - ZPool(zfsDatasets) 1:MC ZFSDataset(zpool)
 
 classes:
   DEFAULTS:
@@ -154,11 +153,7 @@ classes:
         short_label: Type
         # mirror, raidz, disk/file, spare, log, cache
         type: string
-        default: file
-      GUID:
-        # Component ID
-        label: GUID
-        grid_display: false
+        default: "disk/file"
 
   ZRootVDev:
     base: [ZVDev]
