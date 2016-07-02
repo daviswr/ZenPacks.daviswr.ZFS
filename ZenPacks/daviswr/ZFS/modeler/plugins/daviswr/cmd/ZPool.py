@@ -140,6 +140,9 @@ class ZPool(CommandPlugin):
             modname='ZenPacks.daviswr.ZFS.ZPool'
             )
 
+        root_rm_list = list()
+        child_rm_list = list()
+
         # Pool components
         for pool in pools:
             comp = dict()
@@ -160,15 +163,15 @@ class ZPool(CommandPlugin):
                 modname='ZenPacks.daviswr.ZFS.ZPool',
                 data=comp
                 ))
-            root_rm = RelationshipMap(
-                compname='zpools/pool_{}'.format(pool),
-                relname='zrootVDevs',
-                modname='ZenPacks.daviswr.ZFS.ZRootVDev'
-                )
             # Root vDev components
             roots = pools[pool].get('vdev_tree', None)
             if roots is not None:
                 log.debug('ZPool %s has children', comp['id'])
+                root_rm = RelationshipMap(
+                    compname='zpools/pool_{}'.format(pool),
+                    relname='zrootVDevs',
+                    modname='ZenPacks.daviswr.ZFS.ZRootVDev'
+                    )
                 for key in roots.keys():
                     if not key.startswith('children'):
                         del roots[key]
@@ -180,6 +183,8 @@ class ZPool(CommandPlugin):
                             comp[key] = True if ('1' == roots[root][key]) else False
                         elif key in ints:
                             comp[key] = int(roots[root][key])
+                        elif key == 'type':
+                            comp['vDevType'] = value
                         elif key.startswith('children['):
                             children.append(roots[root][key])
                         elif not key == 'name':
@@ -191,14 +196,15 @@ class ZPool(CommandPlugin):
                         modname='ZenPacks.daviswr.ZFS.ZRootVDev',
                         data=comp
                         ))
-                    child_rm = RelationshipMap(
-                        compname='zpools/pool_{0}/zrootVDevs/{0}_{1}'.format(pool, id_str),
-                        relname='zchildVDevs',
-                        modname='ZenPacks.daviswr.ZFS.ZChildVDev'
-                        )
+                    root_rm_list.append(root_rm)
                     # Child vDev components
                     if len(children) > 0:
                         log.debug('Root vDev %s has children', comp['id'])
+                        child_rm = RelationshipMap(
+                            compname='zpools/pool_{0}/zrootVDevs/{1}'.format(pool, id_str),
+                            relname='zchildVDevs',
+                            modname='ZenPacks.daviswr.ZFS.ZChildVDev'
+                            )
                         for child in children:
                             comp = dict()
                             for key in child:
@@ -206,6 +212,8 @@ class ZPool(CommandPlugin):
                                     comp[key] = True if ('1' == child[key]) else False
                                 elif key in ints:
                                     comp[key] = int(child[key])
+                                elif key == 'type':
+                                    comp['vDevType'] = value
                                 elif not key == 'name':
                                     comp[key] = child[key]
                             id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_')) 
@@ -215,10 +223,14 @@ class ZPool(CommandPlugin):
                                 modname='ZenPacks.daviswr.ZFS.ZChildVDev',
                                 data=comp
                                 ))
-                    root_rm.append(child_rm)
-            pool_rm.append(root_rm)
+                            child_rm_list.append(child_rm)
 
         maps.append(pool_rm)
+        for rm in root_rm_list:
+            maps.append(rm)
+        for rm in child_rm_list:
+            maps.append(rm)
+
         log.debug(
             'ZPool RelMap:\n%s',
             str(maps)

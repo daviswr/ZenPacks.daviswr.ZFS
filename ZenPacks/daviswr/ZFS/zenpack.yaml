@@ -2,7 +2,7 @@ name: ZenPacks.daviswr.ZFS
 
 class_relationships:
   - Products.ZenModel.Device.Device(zpools) 1:MC ZPool(server)
-  - ZPool(zrootVDevs) 1:MC ZRootDev(zpool)
+  - ZPool(zrootVDevs) 1:MC ZRootVDev(zpool)
   - ZRootVDev(zchildVDevs) 1:MC ZChildVDev(zrootVDev)
   - ZPool(zfsDatasets) 1:MC ZFSDataset(zpool)
 
@@ -12,6 +12,7 @@ classes:
 
   ZPool:
     label: ZFS Storage Pool
+    short_label: Pool
     # zpool get
     properties:
       DEFAULTS:
@@ -159,15 +160,19 @@ classes:
         short_label: Type
         # mirror, raidz, disk/file, spare, log, cache
         default: "disk"
+      ashift:
+        type: int
+      asize:
+        type: int
       guid:
         label: GUID
       id:
         label: ID
-
-  ZChildVDev:
-    base: [ZVDev]
-    label: ZFS Virtual Device
-    properties:
+      is_log:
+        label: Log Device
+        short_label: Log
+        type: boolean
+        details_display: true
       path:
         label: Path
         details_display: true
@@ -176,17 +181,15 @@ classes:
         type: boolean
         details_display: true
 
+  ZChildVDev:
+    base: [ZVDev]
+    label: ZFS Virtual Device
+    short_label: vDev
+
   ZRootVDev:
     base: [ZVDev]
     label: ZFS Root Virtual Device
-    properties:
-      ashift:
-        type: int
-      asize:
-        type: int
-      islog:
-        type: boolean
-        default: false
+    short_label: Root vDev
 
   ZFSDataset:
     # zfs get
@@ -423,6 +426,7 @@ classes:
   ZFSVol:
     base: [ZFSDataset]
     label: ZFS Volume
+    short_label: ZVol
     properties:
       zDsType:
         label: Dataset Type
@@ -460,6 +464,7 @@ classes:
   ZFS:
     base: [ZFSDataset]
     label: ZFS File System
+    short_label: ZFS
     properties:
       zDsType:
         label: Dataset Type
@@ -576,6 +581,7 @@ classes:
   ZFSSnap:
     base: [ZFSDataset]
     label: ZFS Snapshot
+    short_label: Snap
     properties:
       zDsType:
         label: Dataset Type
