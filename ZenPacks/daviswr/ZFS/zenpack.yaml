@@ -3,7 +3,7 @@ name: ZenPacks.daviswr.ZFS
 class_relationships:
   - Products.ZenModel.Device.Device(zpools) 1:MC ZPool(server)
   - ZPool(zrootVDevs) 1:MC ZRootDev(zpool)
-  - ZRootVDev(zvdevs) 1:MC ZVDev(zrootVDev)
+  - ZRootVDev(zchildVDevs) 1:MC ZChildVDev(zrootVDev)
   - ZPool(zfsDatasets) 1:MC ZFSDataset(zpool)
 
 classes:
@@ -148,7 +148,7 @@ classes:
         details_display: true
 
   ZVDev:
-    label: ZFS Virtual Device
+    label: ZFS Virtual Device Component
     properties:
       DEFAULTS:
         type: string
@@ -163,6 +163,11 @@ classes:
         label: GUID
       id:
         label: ID
+
+  ZChildVDev:
+    base: [ZVDev]
+    label: ZFS Virtual Device
+    properties:
       path:
         label: Path
         details_display: true
@@ -182,8 +187,6 @@ classes:
       islog:
         type: boolean
         default: false
-      path:
-        details_display: false
 
   ZFSDataset:
     # zfs get
@@ -613,7 +616,7 @@ device_classes:
               fragmentation: GAUGE
               free: GAUGE
           zpool-iostat:
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -vg"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
             parser: ZenPacks.daviswr.ZFS.iostat
             datapoints:
               bw-read: DERIVE_MIN_0
@@ -694,7 +697,7 @@ device_classes:
           zpool-iostat:
             type: COMMAND
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -vg"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
             parser: ZenPacks.daviswr.ZFS.iostat
             cycletime: 60
             component: "${here/id}"
