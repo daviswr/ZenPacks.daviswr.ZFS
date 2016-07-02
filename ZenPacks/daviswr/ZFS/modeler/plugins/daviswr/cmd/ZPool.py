@@ -115,11 +115,19 @@ class ZPool(CommandPlugin):
 
         ints = [
             'allocated',
+            'ashift',
+            'asize',
             'capacity',
+            'create_txg',
             'dedupditto',
             'free',
             'freeing',
+            'leaked',
+            'metaslab_array',
+            'metaslab_shift',
             'size',
+            'txg',
+            'DTL',
             ]
 
         floats = [
@@ -127,7 +135,7 @@ class ZPool(CommandPlugin):
             'fragmentation',
             ]
 
-        rm = RelationshipMap(
+        pool_rm = RelationshipMap(
             relname='zpools',
             modname='ZenPacks.daviswr.ZFS.ZPool'
             )
@@ -142,26 +150,78 @@ class ZPool(CommandPlugin):
                     comp[key] = int(pools[pool][key])
                 elif key in floats:
                     comp[key] = float(pools[pool][key])
-                else:
+                elif not key == 'vdev_tree' \
+                    and not key == 'name':
                     comp[key] = pools[pool][key]
             # Can't use the GUID since it's not available in iostat
-            if comp['title'] == pool:
-                id_str = 'pool_{}'.format(pool)
-            else:
-                id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_'))
-            comp['id'] = self.prepId(id_str)
-            if comp.has_key('name'):
-               del comp['name']
-            rm.append(ObjectMap(
+            comp['id'] = self.prepId('pool_{}'.format(pool))
+            log.debug('Found ZPool: %s', comp['id'])
+            pool_rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.ZFS.ZPool',
                 data=comp
                 ))
-        maps.append(rm)
+            root_rm = RelationshipMap(
+                compname='zpools/pool_{}'.format(pool),
+                relname='zrootVDevs',
+                modname='ZenPacks.daviswr.ZFS.ZRootVDev'
+                )
+            # Root vDev components
+            roots = pools[pool].get('vdev_tree', None)
+            if roots is not None:
+                log.debug('ZPool %s has children', comp['id'])
+                for key in roots.keys():
+                    if not key.startswith('children'):
+                        del roots[key]
+                for root in roots:
+                    comp = dict()
+                    children = list()
+                    for key in roots[root]:
+                        if key in ['is_log', 'whole_disk']:
+                            comp[key] = True if ('1' == roots[root][key]) else False
+                        elif key in ints:
+                            comp[key] = int(roots[root][key])
+                        elif key.startswith('children['):
+                            children.append(roots[root][key])
+                        elif not key == 'name':
+                            comp[key] = roots[root][key]
+                    id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_'))
+                    comp['id']= self.prepId(id_str)
+                    log.debug('Found Root vDev: %s', comp['id'])
+                    root_rm.append(ObjectMap(
+                        modname='ZenPacks.daviswr.ZFS.ZRootVDev',
+                        data=comp
+                        ))
+                    child_rm = RelationshipMap(
+                        compname='zpools/pool_{0}/zrootVDevs/{0}_{1}'.format(pool, id_str),
+                        relname='zchildVDevs',
+                        modname='ZenPacks.daviswr.ZFS.ZChildVDev'
+                        )
+                    # Child vDev components
+                    if len(children) > 0:
+                        log.debug('Root vDev %s has children', comp['id'])
+                        for child in children:
+                            comp = dict()
+                            for key in child:
+                                if key in ['is_log', 'whole_disk']:
+                                    comp[key] = True if ('1' == child[key]) else False
+                                elif key in ints:
+                                    comp[key] = int(child[key])
+                                elif not key == 'name':
+                                    comp[key] = child[key]
+                            id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_')) 
+                            comp['id']= self.prepId(id_str)
+                            log.debug('Found child vDev: %s', comp['id'])
+                            child_rm.append(ObjectMap(
+                                modname='ZenPacks.daviswr.ZFS.ZChildVDev',
+                                data=comp
+                                ))
+                    root_rm.append(child_rm)
+            pool_rm.append(root_rm)
+
+        maps.append(pool_rm)
         log.debug(
             'ZPool RelMap:\n%s',
-            str(rm)
+            str(maps)
             )
-
-        #TODO: vDev components
 
         return maps
