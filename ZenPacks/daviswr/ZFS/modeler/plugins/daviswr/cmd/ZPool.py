@@ -6,9 +6,7 @@ from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 class ZPool(CommandPlugin):
-    command = 'sudo /sbin/zpool get -pH all;' \
-        'sudo /sbin/zpool iostat -vg;' \
-        'sudo /sbin/zpool iostat -v'
+    command = 'sudo /sbin/zpool get -pH all;sudo /sbin/zdb -L'
 
     def process(self, device, results, log):
         log.info(
@@ -17,21 +15,24 @@ class ZPool(CommandPlugin):
         maps = list()
 
         pools = dict()
-        vdevs = dict()
-        vdev_idx = dict()
-        root_guids = list()
-        root_names = list()
-        vdev_guids = list()
-        vdev_names = list()
+        last_line = ''
+        last_parent = None
         last_pool = None
         last_root = None
+        last_tree = None
+        last_vdev = None
+        
         get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
-        iostat_regex = r'(?P<dev>\S+)\s+(?:\d\S+|\-)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+'
+        zdb_header_regex = r'(?P<key>\S+)\:$'
+        zdb_kv_regex = r'\ {4}\s*(?P<key>\S+)\:\s?(?P<value>\S+)'
+
         for line in results.splitlines():
             get_match = re.match(get_regex, line)
-            pool_match = re.match(r'^' + iostat_regex, line)
-            root_vdev_match = re.match(r'^\s{2}' + iostat_regex, line)
-            vdev_match = re.match(r'^\s{4}' + iostat_regex, line)
+            zdb_pool_match = re.match(r'^' + zdb_header_regex, line)
+            zdb_tree_match = re.match(r'^    ' + zdb_header_regex, line)
+            zdb_root_match = re.match(r'^        ' + zdb_header_regex, line)
+            zdb_vdev_match = re.match(r'^            ' + zdb_header_regex, line)
+            zdb_kv_match = re.match(zdb_kv_regex, line)
 
             if get_match:
                 pool = get_match.group('pool')
@@ -39,61 +40,61 @@ class ZPool(CommandPlugin):
                 value = get_match.group('value')
                 if not pools.has_key(pool):
                     pools.update({pool: dict()})
-                # Clean up percentages and ratios
                 if value.endswith('%') \
                     or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
+                elif value == '-':
+                    value = None
                 pools[pool].update({key: value})
 
-            elif pool_match:
-                pool = pool_match.group('dev')
-                last_pool = pool
-                if not vdev_idx.has_key(pool):
-                    vdev_idx[pool] = dict()
+            elif zdb_pool_match:
+                pool = zdb_pool_match.group('key')
+                if not pools.has_key(pool):
+                    pools.update({pool: dict()})
+                last_pool = pools[pool]
+                last_pool['type'] = 'pool'
+                last_parent = last_pool
 
-            # Put the vDev names & GUIDs into lists
-            # and store the index in the vdev_idx dict
-            # so we can sort through them later.
-            # An OrderedDict might be a *lot* better for this
-            elif root_vdev_match:
-                root_vdev = root_vdev_match.group('dev')
-                if re.match(r'[a-zA-Z]', root_vdev):
-                    # mirror, raid, etc
-                    root_names.append(root_vdev)
-                else:
-                    # GUID
-                    root_guids.append(root_vdev)
-                    idx = len(root_guids) - 1
-                    last_root = idx
-                    if vdev_idx.has_key(last_pool):
-                        vdev_idx[last_pool][idx] = list()
+            elif zdb_tree_match:
+                key = zdb_tree_match.group('key')
+                if key.find('tree') > -1:
+                    last_pool[key] = dict()
+                    last_tree = last_pool[key]
+                    last_parent = last_tree
 
-            elif vdev_match:
-                vdev = vdev_match.group('dev')
-                if re.match(r'[a-zA-Z]', vdev):
-                    # device name
-                    vdev_names.append(vdev)
-                else:
-                    # GUID
-                    vdev_guids.append(vdev)
-                    idx = len(vdev_guids) - 1
-                    if vdev_idx.has_key(last_pool) \
-                        and vdev_idx[last_pool].has_key(last_root):
-                        vdev_idx[last_pool][last_root].append(idx)
+            elif zdb_root_match:
+                key = zdb_root_match.group('key')
+                last_tree[key] = dict()
+                last_root = last_tree[key]
+                last_root['parent_guid'] = last_pool['guid']
+                last_root['parent_pool'] = last_pool['name']
+                last_root['parent_name'] = last_pool['name']
+                last_parent = last_root
 
-        # Bring vDev GUIDs and names together, using the indexes
-        for pool in vdev_idx:
-            vdevs[pool] = dict()
-            for root in vdev_idx[pool]:
-                rguid = root_guids[root]
-                rname = root_names[root]
-                vdevs[pool][rguid] = dict()
-                vdevs[pool][rguid]['name'] = rname
-                vdevs[pool][rguid]['vdevs'] = dict()
-                for dev in vdev_idx[pool][root]:
-                    dguid = vdev_guids[dev]
-                    dname = vdev_names[dev]
-                    vdevs[pool][rguid]['vdevs'][dguid] = dname
+            elif zdb_vdev_match:
+                key = zdb_vdev_match.group('key')
+                last_root[key] = dict()
+                last_vdev = last_root[key]
+                last_vdev['parent_guid'] = last_root['guid']
+                last_vdev['parent_name'] = last_root['name']
+                last_vdev['parent_pool'] = last_pool['name']
+                last_parent = last_vdev
+
+            elif zdb_kv_match:
+                key = zdb_kv_match.group('key')
+                value = zdb_kv_match.group('value').replace("'", "")
+                if last_pool.has_key('vdev_tree') \
+                    and last_pool['vdev_tree'] == last_parent:
+                    continue
+                last_parent[key] = value
+                if key == 'path':
+                    last_parent['name'] = value.split('/')[-1]
+                elif key == 'id' \
+                    and last_parent.has_key('type'):
+                    last_parent['name'] = '{0}-{1}'.format(last_parent['type'], value)
+                elif key == 'pool_guid':
+                    last_parent['guid'] = value
+            last_line = line
 
         booleans = [
             'autoexpand',
@@ -125,8 +126,6 @@ class ZPool(CommandPlugin):
         # Pool components
         for pool in pools:
             comp = dict()
-            comp['id'] = self.prepId(pool)
-			comp['title'] = pool
             for key in pools[pool]:
                 if key in booleans:
                     comp[key] = True if ('on' == pools[pool][key]) else False
@@ -136,48 +135,14 @@ class ZPool(CommandPlugin):
                     comp[key] = float(pools[pool][key])
                 else:
                     comp[key] = pools[pool][key]
+            comp['id'] = self.prepId(comp.get('guid', pool))
+            comp['title'] = self.prepId(comp.get('name', pool))
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.ZFS.ZPool',
                 data=comp
                 ))
         maps.append(rm)
 
-        # vDev components
-		# Can RelMaps be nested like this?
-        for pool in vdevs:
-            root_rm = RelationshipMap(
-                compname='zpools/{}'.format(pool),
-                relname='zrootVDevs',
-                modname='ZenPacks.daviswr.ZFS.ZRootVDev'
-                )
-            for root in vdevs[pool]:
-                comp = dict()
-                comp['id'] = self.prepId(root)
-                comp['title'] = vdevs[pool][root]['name']
-                comp['GUID'] = root
-                if comp['title'] in ['mirror', 'spare', 'log', 'cache'] \
-                    or comp['title'].startswith('raidz'):
-                    comp['vDevType'] = comp['title']
-                root_rm.append(ObjectMap(
-                    modname='ZenPacks.daviswr.ZFS.ZRootVDev',
-                    data=comp
-                    ))
-                vdev_rm = RelationshipMap(
-                    compname='zpools/{0}/zrootVDevs/{1}/'.format(pool,root),
-                    relname='zvdevs',
-                    modname='ZenPacks.daviswr.ZFS.ZVDev'
-                    ))
-                for dev in vdevs[pool][root]['vdevs']:
-                    comp = {
-                        'id': self.prepId(dev),
-                        'title': vdevs[pool][root]['vdevs'][dev],
-                        'GUID': dev
-                        }
-                     vdev_rm.append(ObjectMap(
-                         modname='ZenPacks.daviswr.ZFS.ZVDev',
-                         data=comp
-                         ))
-                root_rm.append(vdev_rm)
-            maps.append(root_rm)
+        #TODO: vDev components
 
         return maps
