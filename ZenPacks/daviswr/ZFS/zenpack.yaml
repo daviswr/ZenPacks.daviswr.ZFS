@@ -79,6 +79,8 @@ classes:
         label: Delegation
         type: boolean
         default: true
+      errdata:
+        type: int
       expandsize:
         label: Uninitialized Space
         short_label: Uninit
@@ -137,6 +139,8 @@ classes:
         renderer: Zenoss.render.bytesString
         grid_display: true
         details_display: true
+      state:
+        type: int
       version:
         label: Version
         short_label: Ver
@@ -148,16 +152,38 @@ classes:
     properties:
       DEFAULTS:
         type: string
+        grid_display: false
+        details_display: false
       vDevType:
         label: vDev Type
         short_label: Type
         # mirror, raidz, disk/file, spare, log, cache
-        type: string
-        default: "disk/file"
+        default: "disk"
+      guid:
+        label: GUID
+      id:
+        label: ID
+      path:
+        label: Path
+        details_display: true
+      whole_disk:
+        label: Whole Disk
+        type: boolean
+        details_display: true
 
   ZRootVDev:
     base: [ZVDev]
     label: ZFS Root Virtual Device
+    properties:
+      ashift:
+        type: int
+      asize:
+        type: int
+      islog:
+        type: boolean
+        default: false
+      path:
+        details_display: false
 
   ZFSDataset:
     # zfs get
