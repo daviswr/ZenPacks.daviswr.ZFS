@@ -6,7 +6,8 @@ from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 class ZPool(CommandPlugin):
-    command = 'sudo /sbin/zpool get -pH all;sudo /sbin/zdb -L'
+    command = 'sudo /sbin/zpool get -pH all;' \
+        'sudo /sbin/zdb -L'
 
     def process(self, device, results, log):
         log.info(
@@ -15,7 +16,6 @@ class ZPool(CommandPlugin):
         maps = list()
 
         pools = dict()
-        last_line = ''
         last_parent = None
         last_pool = None
         last_root = None
@@ -67,8 +67,8 @@ class ZPool(CommandPlugin):
                 last_tree[key] = dict()
                 last_root = last_tree[key]
                 last_root['parent_guid'] = last_pool['guid']
-                last_root['parent_pool'] = last_pool['name']
-                last_root['parent_name'] = last_pool['name']
+                last_root['parent_pool'] = last_pool['title']
+                last_root['parent_vdev'] = last_pool['title']
                 last_parent = last_root
 
             elif zdb_vdev_match:
@@ -76,25 +76,34 @@ class ZPool(CommandPlugin):
                 last_root[key] = dict()
                 last_vdev = last_root[key]
                 last_vdev['parent_guid'] = last_root['guid']
-                last_vdev['parent_name'] = last_root['name']
-                last_vdev['parent_pool'] = last_pool['name']
+                last_vdev['parent_vdev'] = last_root['title']
+                last_vdev['parent_pool'] = last_pool['title']
                 last_parent = last_vdev
 
             elif zdb_kv_match:
                 key = zdb_kv_match.group('key')
                 value = zdb_kv_match.group('value').replace("'", "")
+                # Attributes right under vdev_tree are pool-wide
+                # and should already be in `zpool get` output
                 if last_pool.has_key('vdev_tree') \
                     and last_pool['vdev_tree'] == last_parent:
                     continue
-                last_parent[key] = value
-                if key == 'path':
-                    last_parent['name'] = value.split('/')[-1]
-                elif key == 'id' \
-                    and last_parent.has_key('type'):
-                    last_parent['name'] = '{0}-{1}'.format(last_parent['type'], value)
+                # ZenModeler does not like these in the RelMap
+                elif key in ['hostid', 'hostname']:
+                    continue
+                elif key == 'name':
+                    last_parent['title'] = value
+                    continue
                 elif key == 'pool_guid':
                     last_parent['guid'] = value
-            last_line = line
+                    continue
+                last_parent[key] = value
+				# Path comes after ID & type in ZDB output if vDev is a disk
+                if key == 'path':
+                    last_parent['title'] = value.split('/')[-1]
+                elif key == 'id' \
+                    and last_parent.has_key('type'):
+                    last_parent['title'] = '{0}-{1}'.format(last_parent['type'], value)
 
         booleans = [
             'autoexpand',
@@ -119,7 +128,7 @@ class ZPool(CommandPlugin):
             ]
 
         rm = RelationshipMap(
-            relname='zpool',
+            relname='zpools',
             modname='ZenPacks.daviswr.ZFS.ZPool'
             )
 
@@ -135,13 +144,23 @@ class ZPool(CommandPlugin):
                     comp[key] = float(pools[pool][key])
                 else:
                     comp[key] = pools[pool][key]
-            comp['id'] = self.prepId(comp.get('guid', pool))
-            comp['title'] = self.prepId(comp.get('name', pool))
+            # Can't use the GUID since it's not available in iostat
+            if comp['title'] == pool:
+                id_str = 'pool_{}'.format(pool)
+            else:
+                id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_'))
+            comp['id'] = self.prepId(id_str)
+            if comp.has_key('name'):
+               del comp['name']
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.ZFS.ZPool',
                 data=comp
                 ))
         maps.append(rm)
+        log.debug(
+            'ZPool RelMap:\n%s',
+            str(rm)
+            )
 
         #TODO: vDev components
 
