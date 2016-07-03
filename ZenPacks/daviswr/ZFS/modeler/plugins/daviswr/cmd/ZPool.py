@@ -39,18 +39,18 @@ class ZPool(CommandPlugin):
                 key = get_match.group('key')
                 value = get_match.group('value')
                 if not pools.has_key(pool):
-                    pools.update({pool: dict()})
+                    pools[pool] = dict()
                 if value.endswith('%') \
                     or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None
-                pools[pool].update({key: value})
+                pools[pool][key] = value
 
             elif zdb_pool_match:
                 pool = zdb_pool_match.group('key')
                 if not pools.has_key(pool):
-                    pools.update({pool: dict()})
+                    pools[pool] = dict()
                 last_pool = pools[pool]
                 last_pool['type'] = 'pool'
                 last_parent = last_pool

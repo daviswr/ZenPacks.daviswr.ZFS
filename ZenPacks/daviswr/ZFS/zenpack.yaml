@@ -183,12 +183,19 @@ classes:
     base: [ZVDev]
     label: ZFS Virtual Device
     short_label: VDev
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
 
   ZRootVDev:
     base: [ZVDev]
     label: ZFS Root Virtual Device
     short_label: Root VDev
     properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
       asize:
         label: Allocable Space
         short_label: Space
@@ -434,10 +441,9 @@ classes:
     label: ZFS Volume
     short_label: Volume
     properties:
-      zDsType:
-        label: Dataset Type
-        type: string
-        default: Volume
+      DEFAULTS:
+        grid_display: false
+        details_display: false
       compressratio:
         label: Compression Ratio
         short_label: Compress
@@ -472,10 +478,9 @@ classes:
     label: ZFS File System
     short_label: File System
     properties:
-      zDsType:
-        label: Dataset Type
-        type: string
-        default: File System
+      DEFAULTS:
+        grid_display: false
+        details_display: false
       casesensitivity:
         label: Case Sensitivity
         short_label: Case
@@ -587,12 +592,11 @@ classes:
   ZFSSnap:
     base: [ZFSDataset]
     label: ZFS Snapshot
-    short_label: Snap
+    short_label: Snapshot
     properties:
-      zDsType:
-        label: Dataset Type
-        type: string
-        default: Snapshot
+      DEFAULTS:
+        grid_display: false
+        details_display: false
       clones:
         label: Clones
         type: string
