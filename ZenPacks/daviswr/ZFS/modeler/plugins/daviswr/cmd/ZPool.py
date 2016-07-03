@@ -21,7 +21,7 @@ class ZPool(CommandPlugin):
         last_root = None
         last_tree = None
         last_vdev = None
-        
+
         get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
         zdb_header_regex = r'(?P<key>\S+)\:$'
         zdb_kv_regex = r'\ {4}\s*(?P<key>\S+)\:\s?(?P<value>\S+)'
@@ -66,18 +66,12 @@ class ZPool(CommandPlugin):
                 key = zdb_root_match.group('key')
                 last_tree[key] = dict()
                 last_root = last_tree[key]
-                last_root['parent_guid'] = last_pool['guid']
-                last_root['parent_pool'] = last_pool['title']
-                last_root['parent_vdev'] = last_pool['title']
                 last_parent = last_root
 
             elif zdb_vdev_match:
                 key = zdb_vdev_match.group('key')
                 last_root[key] = dict()
                 last_vdev = last_root[key]
-                last_vdev['parent_guid'] = last_root['guid']
-                last_vdev['parent_vdev'] = last_root['title']
-                last_vdev['parent_pool'] = last_pool['title']
                 last_parent = last_vdev
 
             elif zdb_kv_match:
@@ -116,7 +110,7 @@ class ZPool(CommandPlugin):
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
                         last_parent['id']
-                        ) 
+                        )
 
         booleans = [
             'autoexpand',
@@ -206,7 +200,7 @@ class ZPool(CommandPlugin):
                         pool,
                         comp.get('title', '').replace('-', '_')
                         )
-                    comp['id']= self.prepId(id_str)
+                    comp['id'] = self.prepId(id_str)
                     log.debug('Found Root vDev: %s', comp['id'])
                     root_rm.append(ObjectMap(
                         modname='ZenPacks.daviswr.ZFS.ZRootVDev',
@@ -235,8 +229,8 @@ class ZPool(CommandPlugin):
                             id_str = '{0}_{1}'.format(
                                 pool,
                                 comp.get('title', '').replace('-', '_')
-                                ) 
-                            comp['id']= self.prepId(id_str)
+                                )
+                            comp['id'] = self.prepId(id_str)
                             log.debug('Found child vDev: %s', comp['id'])
                             child_rm.append(ObjectMap(
                                 modname='ZenPacks.daviswr.ZFS.ZChildVDev',
