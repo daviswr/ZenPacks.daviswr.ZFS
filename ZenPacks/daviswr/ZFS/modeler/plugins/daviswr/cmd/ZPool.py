@@ -98,12 +98,25 @@ class ZPool(CommandPlugin):
                     last_parent['guid'] = value
                     continue
                 last_parent[key] = value
-				# Path comes after ID & type in ZDB output if vDev is a disk
+                # disk type
                 if key == 'path':
                     last_parent['title'] = value.split('/')[-1]
+                # mirror type
                 elif key == 'id' \
                     and last_parent.has_key('type'):
-                    last_parent['title'] = '{0}-{1}'.format(last_parent['type'], value)
+                    last_parent['title'] = '{0}-{1}'.format(
+                        last_parent['type'],
+                        value
+                        )
+                # raidz type
+                elif key == 'nparity' \
+                    and last_parent.has_key('id') \
+                    and last_parent.has_key('type'):
+                    last_parent['type'] += value
+                    last_parent['title'] = '{0}-{1}'.format(
+                        last_parent['type'],
+                        last_parent['id']
+                        ) 
 
         booleans = [
             'autoexpand',
@@ -184,12 +197,15 @@ class ZPool(CommandPlugin):
                         elif key in ints:
                             comp[key] = int(roots[root][key])
                         elif key == 'type':
-                            comp['vDevType'] = value
+                            comp['VDevType'] = roots[root][key]
                         elif key.startswith('children['):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
-                    id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_'))
+                    id_str = '{0}_{1}'.format(
+                        pool,
+                        comp.get('title', '').replace('-', '_')
+                        )
                     comp['id']= self.prepId(id_str)
                     log.debug('Found Root vDev: %s', comp['id'])
                     root_rm.append(ObjectMap(
@@ -213,10 +229,13 @@ class ZPool(CommandPlugin):
                                 elif key in ints:
                                     comp[key] = int(child[key])
                                 elif key == 'type':
-                                    comp['vDevType'] = value
+                                    comp['VDevType'] = child[key]
                                 elif not key == 'name':
                                     comp[key] = child[key]
-                            id_str = '{0}_{1}'.format(pool, comp.get('title', '').replace('-', '_')) 
+                            id_str = '{0}_{1}'.format(
+                                pool,
+                                comp.get('title', '').replace('-', '_')
+                                ) 
                             comp['id']= self.prepId(id_str)
                             log.debug('Found child vDev: %s', comp['id'])
                             child_rm.append(ObjectMap(

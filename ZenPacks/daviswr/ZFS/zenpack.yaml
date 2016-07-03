@@ -13,7 +13,6 @@ classes:
   ZPool:
     label: ZFS Storage Pool
     short_label: Pool
-    # zpool get
     properties:
       DEFAULTS:
         grid_display: false
@@ -134,8 +133,8 @@ classes:
         grid_display: true
         details_display: true
       size:
-        label: Total Size
-        short_label: Size
+        label: Total Space
+        short_label: Space
         type: int
         renderer: Zenoss.render.bytesString
         grid_display: true
@@ -155,11 +154,10 @@ classes:
         type: string
         grid_display: false
         details_display: false
-      vDevType:
-        label: vDev Type
-        short_label: Type
+      VDevType:
+        label: Type
         # mirror, raidz, disk/file, spare, log, cache
-        default: "disk"
+        details_display: true
       ashift:
         type: int
       asize:
@@ -184,16 +182,24 @@ classes:
   ZChildVDev:
     base: [ZVDev]
     label: ZFS Virtual Device
-    short_label: vDev
+    short_label: VDev
 
   ZRootVDev:
     base: [ZVDev]
     label: ZFS Root Virtual Device
-    short_label: Root vDev
+    short_label: Root VDev
+    properties:
+      asize:
+        label: Allocable Space
+        short_label: Space
+        type: int
+        renderer: Zenoss.render.bytesString
+        grid_display: true
+        details_display: true
 
   ZFSDataset:
-    # zfs get
     label: ZFS Dataset
+    short_label: Dataset
     properties:
       DEFAULTS:
         grid_display: false
@@ -426,7 +432,7 @@ classes:
   ZFSVol:
     base: [ZFSDataset]
     label: ZFS Volume
-    short_label: ZVol
+    short_label: Volume
     properties:
       zDsType:
         label: Dataset Type
@@ -464,7 +470,7 @@ classes:
   ZFS:
     base: [ZFSDataset]
     label: ZFS File System
-    short_label: ZFS
+    short_label: File System
     properties:
       zDsType:
         label: Dataset Type
