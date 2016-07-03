@@ -704,7 +704,7 @@ device_classes:
                 colorindex: 1
 
       ZVDev:
-        targetPythonClass: ZenPacks.daviswr.ZVDev
+        targetPythonClass: ZenPacks.daviswr.ZFS.ZVDev
         datasources:
           zpool-iostat:
             type: COMMAND
