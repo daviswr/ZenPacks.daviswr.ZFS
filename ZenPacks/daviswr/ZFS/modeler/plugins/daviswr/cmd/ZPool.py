@@ -7,7 +7,8 @@ from Products.DataCollector.plugins.DataMaps \
 
 class ZPool(CommandPlugin):
     command = 'sudo /sbin/zpool get -pH all;' \
-        'sudo /sbin/zdb -L'
+        'sudo /sbin/zdb -L;' \
+        'sudo /sbin/zpool status -v'
 
     def process(self, device, results, log):
         log.info(
@@ -20,11 +21,16 @@ class ZPool(CommandPlugin):
         last_pool = None
         last_root = None
         last_tree = None
+        last_type = None
         last_vdev = None
 
         get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
         zdb_header_regex = r'(?P<key>\S+)\:$'
         zdb_kv_regex = r'\ {4}\s*(?P<key>\S+)\:\s?(?P<value>\S+)'
+        status_pool_regex = r'^\s+pool: (?P<dev>\S+)$'
+        status_logs_regex = r'^\s+logs$'
+        status_cache_regex = r'^\s+cache$'
+        status_dev_regex = r'(?P<dev>\S+)\s+\S+(?:\s+\d+){3}$'
 
         for line in results.splitlines():
             get_match = re.match(get_regex, line)
@@ -33,6 +39,12 @@ class ZPool(CommandPlugin):
             zdb_root_match = re.match(r'^        ' + zdb_header_regex, line)
             zdb_vdev_match = re.match(r'^            ' + zdb_header_regex, line)
             zdb_kv_match = re.match(zdb_kv_regex, line)
+            status_pool_match = re.match(status_pool_regex, line) \
+                or re.match(r'^\t' + status_dev_regex, line)
+            status_logs_match = re.match(status_logs_regex, line)
+            status_cache_match = re.match(status_cache_regex, line)
+            status_root_match = re.match(r'^\t  ' + status_dev_regex, line)
+            status_child_match = re.match(r'^\t    ' + status_dev_regex, line)
 
             if get_match:
                 pool = get_match.group('pool')
@@ -112,6 +124,43 @@ class ZPool(CommandPlugin):
                         last_parent['id']
                         )
 
+            # 'zpool status' is only to find cache devices
+            # since they're strangely absent from zdb
+            elif status_pool_match:
+                pool = status_pool_match.group('dev')
+                if not pools.has_key(pool):
+                    pools[pool] = dict()
+                if not pools[pool].has_key('vdev_tree'):
+                    pools[pool]['vdev_tree'] = dict()
+                last_pool = pools[pool]
+                last_pool['type'] = 'pool'
+                last_type = last_pool['type']
+                last_tree = pools[pool]['vdev_tree']
+                last_parent = last_tree
+
+            elif status_logs_match:
+                last_type = 'logs'
+
+            elif status_cache_match:
+                last_type = 'cache'
+
+            # Emulate structure in zdb output for log devices
+            # Each device is a root vdev,
+            # rather than a child vdev in a logs/cache root
+            elif status_root_match:
+                if 'cache' == last_type:
+                    dev = status_child_match.group('dev')
+                    key = 'cache_{}'.format(dev)
+                    if not last_tree.has_key(key):
+                        last_tree[key] = dict()
+                    last_root = last_tree[key]
+                    last_root['title'] = dev
+                    last_root['is_cache'] = '1'
+                    last_root['is_log'] = '0'
+
+            elif status_child_match:
+                last_type = 'child'
+                
         booleans = [
             'autoexpand',
             'autoreplace',
@@ -180,19 +229,21 @@ class ZPool(CommandPlugin):
                     modname='ZenPacks.daviswr.ZFS.ZRootVDev'
                     )
                 for key in roots.keys():
-                    if not key.startswith('children'):
+                    if not key.startswith('children') \
+                        and not key.startswith('cache_'):
                         del roots[key]
                 for root in roots:
                     comp = dict()
                     children = list()
                     for key in roots[root]:
-                        if key in ['is_log', 'whole_disk']:
+                        if key in ['is_cache', 'is_log', 'whole_disk']:
                             comp[key] = True if ('1' == roots[root][key]) else False
                         elif key in ints:
                             comp[key] = int(roots[root][key])
                         elif key == 'type':
                             comp['VDevType'] = roots[root][key]
-                        elif key.startswith('children['):
+                        elif key.startswith('children[') \
+                            or key.startswith('cache_'):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
@@ -218,7 +269,7 @@ class ZPool(CommandPlugin):
                         for child in children:
                             comp = dict()
                             for key in child:
-                                if key in ['is_log', 'whole_disk']:
+                                if key in ['is_cache', 'is_log', 'whole_disk']:
                                     comp[key] = True if ('1' == child[key]) else False
                                 elif key in ints:
                                     comp[key] = int(child[key])

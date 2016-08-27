@@ -156,7 +156,7 @@ classes:
         details_display: false
       VDevType:
         label: Type
-        # mirror, raidz, disk/file, spare, log, cache
+        # mirror, raidz, disk/file, spare(?)
         details_display: true
       ashift:
         type: int
@@ -166,6 +166,11 @@ classes:
         label: GUID
       id:
         label: ID
+      is_cache:
+        label: Cache Device
+        short_label: Cache
+        type: boolean
+        details_display: true
       is_log:
         label: Log Device
         short_label: Log
