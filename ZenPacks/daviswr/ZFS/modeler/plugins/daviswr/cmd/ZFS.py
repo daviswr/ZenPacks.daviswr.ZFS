@@ -16,8 +16,6 @@ class ZFS(CommandPlugin):
         maps = list()
 
         pools = dict()
-        last_parent = None
-        last_pool = None
 
         get_regex = r'^(?P<ds>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
 
