@@ -73,7 +73,6 @@ classes:
         label: Dedup Ratio
         type: float
         datapoint: zpool-get_dedupratio
-        grid_display: true
         details_display: true
       delegation:
         label: Delegation
@@ -114,10 +113,9 @@ classes:
         label: GUID
         type: string
       health:
+        # Can't be updated dynamically outside modeling
         label: Health
         type: string
-        grid_display: true
-        details_display: true
       #leaked:
       #  label: Leaked
       #  type: int
@@ -160,22 +158,10 @@ classes:
         details_display: true
       ashift:
         type: int
-      asize:
-        type: int
       guid:
         label: GUID
       id:
         label: ID
-      is_cache:
-        label: Cache Device
-        short_label: Cache
-        type: boolean
-        details_display: true
-      is_log:
-        label: Log Device
-        short_label: Log
-        type: boolean
-        details_display: true
       path:
         label: Path
         details_display: true
@@ -207,6 +193,18 @@ classes:
         type: int
         renderer: Zenoss.render.bytesString
         grid_display: true
+        details_display: true
+      is_cache:
+        label: Cache Device
+        short_label: Cache
+        type: boolean
+        default: false
+        details_display: true
+      is_log:
+        label: Log Device
+        short_label: Log
+        type: boolean
+        default: false
         details_display: true
 
   ZFSDataset:
@@ -276,7 +274,6 @@ classes:
         label: Child Datasets
         short_label: Children
         type: int
-        details_display: true
       filesystem_limit:
         label: Maximum Filesystems
         short_label: Max FS
@@ -300,7 +297,7 @@ classes:
         datapoint: zfs-get_logicalused
         details_display: true
       mlslabel:
-        label: Trused Ext Zone Label
+        label: Trusted Ext Zone Label
         short_label: Zone Label
         type: string
         default: none
@@ -331,6 +328,7 @@ classes:
         short_label: Referenced
         type: int
         renderer: Zenoss.render.bytesString
+        datapoint: zfs-referenced
         details_display: true
       refquota:
         label: Reference Quota
@@ -357,7 +355,6 @@ classes:
         type: int
         renderer: Zenoss.render.bytesString
         default: 0
-        grid_display: true
         details_display: true
       secondarycache:
         label: L2ARC
@@ -377,7 +374,6 @@ classes:
       snapshot_count:
         label: Snapshots
         type: int
-        details_display: true
       snapshot_limit:
         label: Maximum Snapshots
         short_label: Max Snaps
@@ -772,6 +768,7 @@ device_classes:
               available: GAUGE
               logicalreferenced: GAUGE
               logicalused: GAUGE
+              referenced: GAUGE
               used: GAUGE
               usedbychildren: GAUGE
               usedbydataset: GAUGE

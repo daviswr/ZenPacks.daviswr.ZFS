@@ -23,6 +23,7 @@ class ZPool(CommandPlugin):
         last_tree = None
         last_type = None
         last_vdev = None
+        zpool_status = False
 
         get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
         zdb_header_regex = r'(?P<key>\S+)\:$'
@@ -60,12 +61,13 @@ class ZPool(CommandPlugin):
                 pools[pool][key] = value
 
             elif zdb_pool_match:
-                pool = zdb_pool_match.group('key')
-                if not pools.has_key(pool):
-                    pools[pool] = dict()
-                last_pool = pools[pool]
-                last_pool['type'] = 'pool'
-                last_parent = last_pool
+                if not zpool_status:
+                    pool = zdb_pool_match.group('key')
+                    if not pools.has_key(pool):
+                        pools[pool] = dict()
+                    last_pool = pools[pool]
+                    last_pool['type'] = 'pool'
+                    last_parent = last_pool
 
             elif zdb_tree_match:
                 key = zdb_tree_match.group('key')
@@ -127,6 +129,7 @@ class ZPool(CommandPlugin):
             # 'zpool status' is only to find cache devices
             # since they're strangely absent from zdb
             elif status_pool_match:
+                zpool_status = True
                 pool = status_pool_match.group('dev')
                 if not pools.has_key(pool):
                     pools[pool] = dict()

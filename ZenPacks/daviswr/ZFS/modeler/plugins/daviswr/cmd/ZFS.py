@@ -1,4 +1,5 @@
 import re
+import time
 
 from Products.DataCollector.plugins.CollectorPlugin \
     import CommandPlugin
@@ -56,8 +57,13 @@ class ZFS(CommandPlugin):
             'zoned',
             ]
 
+        floats = [
+            'compressratio',
+            'refcompressratio',
+            ]
+
         ints = [
-            'avilable',
+            'available',
             'copies',
             'filesystem_count',
             'filesystem_limit',
@@ -82,9 +88,8 @@ class ZFS(CommandPlugin):
             'written',
             ]
 
-        floats = [
-            'compressratio',
-            'refcompressratio',
+        times = [
+            'creation',
             ]
 
         prefixes = {
@@ -98,6 +103,8 @@ class ZFS(CommandPlugin):
             'volume': 'Vol',
             'snapshot': 'Snap'
             }
+
+        time_format = '%Y-%m-%d %H:%M:%S'
 
         rm = RelationshipMap(
             relname='zfsdatasets',
@@ -117,10 +124,15 @@ class ZFS(CommandPlugin):
                 for key in datasets[ds]:
                     if key in booleans:
                         comp[key] = True if ('on' == datasets[ds][key]) else False
-                    elif key in ints:
-                        comp[key] = int(datasets[ds][key])
                     elif key in floats:
                         comp[key] = float(datasets[ds][key])
+                    elif key in ints:
+                        comp[key] = int(datasets[ds][key])
+                    elif key in times:
+                        comp[key] = time.strftime(
+                            time_format,
+                            time.localtime(int(datasets[ds][key]))
+                            )
                     else:
                         comp[key] = datasets[ds][key]
                 prefix = prefixes.get(comp.get('zDsType'), '')
