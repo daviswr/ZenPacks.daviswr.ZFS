@@ -27,9 +27,9 @@ class ZFS(CommandPlugin):
                 pool = ds.split('/')[0]
                 key = get_match.group('key')
                 value = get_match.group('value')
-                if not pools.has_key(pool):
+                if pool not in pools:
                     pools[pool] = dict()
-                if not pools[pool].has_key(ds):
+                if ds not in pools[pool]:
                     pools[pool][ds] = dict()
                 if value.endswith('%') \
                     or re.match(r'^\d+\.\d{2}x$', value):

@@ -51,7 +51,7 @@ class ZPool(CommandPlugin):
                 pool = get_match.group('pool')
                 key = get_match.group('key')
                 value = get_match.group('value')
-                if not pools.has_key(pool):
+                if pool not in pools:
                     pools[pool] = dict()
                 if value.endswith('%') \
                     or re.match(r'^\d+\.\d{2}x$', value):
@@ -63,7 +63,7 @@ class ZPool(CommandPlugin):
             elif zdb_pool_match:
                 if not zpool_status:
                     pool = zdb_pool_match.group('key')
-                    if not pools.has_key(pool):
+                    if pool not in pools:
                         pools[pool] = dict()
                     last_pool = pools[pool]
                     last_pool['type'] = 'pool'
@@ -93,7 +93,7 @@ class ZPool(CommandPlugin):
                 value = zdb_kv_match.group('value').replace("'", "")
                 # Attributes right under vdev_tree are pool-wide
                 # and should already be in `zpool get` output
-                if last_pool.has_key('vdev_tree') \
+                if 'vdev_tree' in last_pool \
                     and last_pool['vdev_tree'] == last_parent:
                     continue
                 # ZenModeler does not like these in the RelMap
@@ -111,15 +111,15 @@ class ZPool(CommandPlugin):
                     last_parent['title'] = value.split('/')[-1]
                 # mirror type
                 elif key == 'id' \
-                    and last_parent.has_key('type'):
+                    and 'type' in last_parent:
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
                         value
                         )
                 # raidz type
                 elif key == 'nparity' \
-                    and last_parent.has_key('id') \
-                    and last_parent.has_key('type'):
+                    and 'id' in last_parent \
+                    and 'type' in last_parent:
                     last_parent['type'] += value
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
@@ -131,9 +131,9 @@ class ZPool(CommandPlugin):
             elif status_pool_match:
                 zpool_status = True
                 pool = status_pool_match.group('dev')
-                if not pools.has_key(pool):
+                if pool not in pools:
                     pools[pool] = dict()
-                if not pools[pool].has_key('vdev_tree'):
+                if 'vdev_tree' not in pools[pool]:
                     pools[pool]['vdev_tree'] = dict()
                 last_pool = pools[pool]
                 last_pool['type'] = 'pool'
@@ -154,7 +154,7 @@ class ZPool(CommandPlugin):
                 if 'cache' == last_type:
                     dev = status_child_match.group('dev')
                     key = 'cache_{}'.format(dev)
-                    if not last_tree.has_key(key):
+                    if key not in last_tree:
                         last_tree[key] = dict()
                     last_root = last_tree[key]
                     last_root['title'] = dev
