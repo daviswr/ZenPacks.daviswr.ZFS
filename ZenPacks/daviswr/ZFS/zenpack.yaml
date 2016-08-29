@@ -241,7 +241,8 @@ classes:
         default: true
       canmount:
         label: Mountable
-        type: boolean
+        type: string
+        details_display: true
       checksum:
         label: Checksum
         type: string
@@ -521,6 +522,8 @@ classes:
         label: Mounted
         type: boolean
         default: true
+        grid_display: true
+        details_display: true
       mountpoint:
         label: Mount Point
         short_label: Path
@@ -625,7 +628,7 @@ device_classes:
             component: "${here/id}"
           zpool-get:
             commandTemplate: "/usr/bin/sudo /sbin/zpool get -pH all"
-            parser: ZenPacks.daviswr.ZFS.get
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.get
             datapoints:
               allocated: GAUGE
               capacity: GAUGE
@@ -634,7 +637,7 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
-            parser: ZenPacks.daviswr.ZFS.iostat
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: DERIVE_MIN_0
               bw-write: DERIVE_MIN_0
@@ -715,7 +718,7 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
-            parser: ZenPacks.daviswr.ZFS.iostat
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             cycletime: 60
             component: "${here/id}"
             datapoints:
@@ -761,7 +764,7 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all"
-            parser: ZenPacks.daviswr.ZFS.get
+            parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             cycletime: 60
             component: "${here/id}"
             datapoints:
@@ -795,8 +798,8 @@ device_classes:
               DEFAULTS:
                 lineType: AREA
                 stacked: true
-              Children:
-                dpName: zfs-get_usedbychildren
+              Dataset:
+                dpName: zfs-get_usedbydataset
                 colorindex: 0
               Reference:
                 dpName: zfs-get_usedbyrefreservation
@@ -804,11 +807,9 @@ device_classes:
               Snapshots:
                 dpName: zfs-get_usedbysnapshots
                 colorindex: 2
-              Dataset:
-                dpName: zfs-get_usedbydataset
-                lineType: LINE
-                lineWidth: 1
-                color: 000000
+              Children:
+                dpName: zfs-get_usedbychildren
+                colorindex: 3
           Logical Capacity:
             # TODO: work out stacking, RPN, etc
             graphpoints:

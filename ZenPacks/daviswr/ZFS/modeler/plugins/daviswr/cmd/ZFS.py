@@ -43,7 +43,6 @@ class ZFS(CommandPlugin):
 
         booleans = [
             'atime',
-            'canmount',
             'defer_destroy',
             'mounted',
             'nbmand',
@@ -121,7 +120,7 @@ class ZFS(CommandPlugin):
                 comp = dict()
                 for key in datasets[ds]:
                     if key in booleans:
-                        comp[key] = True if ('on' == datasets[ds][key]) else False
+                        comp[key] = True if ('on' == datasets[ds][key] or 'yes' == datasets[ds][key]) else False
                     elif key in floats:
                         comp[key] = float(datasets[ds][key])
                     elif key in ints:
@@ -135,6 +134,8 @@ class ZFS(CommandPlugin):
                         comp[key] = datasets[ds][key]
                 prefix = prefixes.get(comp.get('zDsType'), '')
                 suffix = suffixes.get(comp.get('zDsType'), 'Dataset')
+                # Pool name should already be part of the dataset name,
+                # making it unique
                 comp['id'] = self.prepId('{0}_{1}'.format(prefix, ds))
                 comp['title'] = ds
                 log.debug('Found ZFS %s: %s', comp.get('type', ''), comp['id'])
