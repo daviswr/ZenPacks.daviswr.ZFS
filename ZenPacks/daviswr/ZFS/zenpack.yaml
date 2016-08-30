@@ -639,13 +639,13 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
-              bw-read: DERIVE_MIN_0
-              bw-write: DERIVE_MIN_0
-              op-read: DERIVE_MIN_0
-              op-write: DERIVE_MIN_0
+              bw-read: GAUGE
+              bw-write: GAUGE
+              op-read: GAUGE
+              op-write: GAUGE
         graphs:
           DEFAULTS:
             miny: 0
