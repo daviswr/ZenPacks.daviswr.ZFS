@@ -12,7 +12,7 @@ class get(CommandParser):
 
         pools = dict()
 
-        get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
+        get_regex = r'^(?P<pool>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
         for line in cmd.result.output.splitlines():
             get_match = re.match(get_regex, line)
@@ -28,7 +28,7 @@ class get(CommandParser):
                     value = value[:-1]
                 elif value == '-':
                     value = None
-                    pools[pool][key] = value
+                pools[pool][key] = value
 
         datapoints = [
             'allocated',
@@ -41,14 +41,14 @@ class get(CommandParser):
             'fragmentation',
             ]
 
-        datapoints.append(floats)
+        datapoints += floats
 
         for pool in pools:
             comp_id = prepId('pool_{}'.format(pool))
             if comp_id not in components:
                 components[comp_id] = dict()
             for measure in datapoints:
-                if measure in pool:
+                if measure in pools[pool]:
                     if measure in floats:
                         value = float(pools[pool].get(measure))
                     else:

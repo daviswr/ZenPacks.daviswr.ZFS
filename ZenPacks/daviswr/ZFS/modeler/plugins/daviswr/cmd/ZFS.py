@@ -7,7 +7,7 @@ from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 class ZFS(CommandPlugin):
-    command = 'sudo /sbin/zfs get -pH all'
+    command = '/usr/bin/sudo /sbin/zfs get -pH all'
 
     def process(self, device, results, log):
         log.info(
@@ -17,7 +17,7 @@ class ZFS(CommandPlugin):
 
         pools = dict()
 
-        get_regex = r'^(?P<ds>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
+        get_regex = r'^(?P<ds>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
         for line in results.splitlines():
             get_match = re.match(get_regex, line)

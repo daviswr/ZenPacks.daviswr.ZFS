@@ -3,7 +3,7 @@ name: ZenPacks.daviswr.ZFS
 class_relationships:
   - Products.ZenModel.Device.Device(zpools) 1:MC ZPool(server)
   - ZPool(zrootVDevs) 1:MC ZRootVDev(zpool)
-  - ZRootVDev(zchildVDevs) 1:MC ZChildVDev(zrootVDev)
+  - ZRootVDev(zstoreDevs) 1:MC ZStoreDev(zrootVDev)
   - ZPool(zfsDatasets) 1:MC ZFSDataset(zpool)
 
 classes:
@@ -55,7 +55,7 @@ classes:
         details_display: true
       capacity:
         label: Percent Used
-        short_label: Capacity
+        short_label: "Capacity %"
         # percent
         type: int
         datapoint: zpool-get_capacity
@@ -91,7 +91,7 @@ classes:
         default: wait
       fragmentation:
         label: Fragmentation
-        short_label: Frag
+        short_label: "Frag %"
         type: float
         datapoint: zpool-get_fragmentation
         grid_display: true
@@ -146,7 +146,8 @@ classes:
         details_display: true
 
   ZVDev:
-    label: ZFS Virtual Device Component
+    label: ZFS Virtual Device
+    short_label: VDev
     properties:
       DEFAULTS:
         type: string
@@ -169,15 +170,6 @@ classes:
         label: Whole Disk
         type: boolean
         details_display: true
-
-  ZChildVDev:
-    base: [ZVDev]
-    label: ZFS Virtual Device
-    short_label: VDev
-    properties:
-      DEFAULTS:
-        grid_display: false
-        details_display: false
 
   ZRootVDev:
     base: [ZVDev]
@@ -206,6 +198,15 @@ classes:
         type: boolean
         default: false
         details_display: true
+
+  ZStoreDev:
+    base: [ZVDev]
+    label: ZFS Storage Device
+    short_label: Store
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
 
   ZFSDataset:
     label: ZFS Dataset
@@ -437,6 +438,26 @@ classes:
         type: boolean
         default: false
         details_display: true
+
+  ZFSSnap:
+    base: [ZFSDataset]
+    label: ZFS Snapshot
+    short_label: Snapshot
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
+      clones:
+        label: Clones
+        type: string
+        details_display: true
+      defer_destroy:
+        label: Deferred Destruction
+        type: boolean
+        default: false
+      userrefs:
+        label: User Holds
+        type: int
       
   ZFSVol:
     base: [ZFSDataset]
@@ -593,40 +614,21 @@ classes:
         default: on
         details_display: true
 
-  ZFSSnap:
-    base: [ZFSDataset]
-    label: ZFS Snapshot
-    short_label: Snapshot
-    properties:
-      DEFAULTS:
-        grid_display: false
-        details_display: false
-      clones:
-        label: Clones
-        type: string
-        details_display: true
-      defer_destroy:
-        label: Deferred Destruction
-        type: boolean
-        default: false
-      userrefs:
-        label: User Holds
-        type: int
-
 
 device_classes:
   /:
     remove: false
     templates:
-      ZPool:
+      ZFSStoragePool:
         targetPythonClass: ZenPacks.daviswr.ZFS.ZPool
         datasources:
           DEFAULTS:
             type: COMMAND
-            usessh: true
+            # usessh doesn't seem to inherit
             cycletime: 60
             component: "${here/id}"
           zpool-get:
+            usessh: true
             commandTemplate: "/usr/bin/sudo /sbin/zpool get -pH all"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.get
             datapoints:
@@ -636,7 +638,8 @@ device_classes:
               fragmentation: GAUGE
               free: GAUGE
           zpool-iostat:
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: DERIVE_MIN_0
@@ -682,53 +685,7 @@ device_classes:
                 dpName: zpool-get_dedupratio
                 lineType: LINE
                 lineWidth: 2
-                colorindex: 2
-          Activity:
-            units: IOPS
-            graphpoints:
-              Writes:
-                dpName: zpool-iostat_op-write
-                lineType: AREA
-                stacked: true
                 colorindex: 0
-              Reads:
-                dpName: zpool-iostat_op-read
-                lineType: LINE
-                lineWidth: 1
-                colorindex: 1
-          Throughput:
-            units: bytes/sec
-            base: true
-            graphpoints:
-              Written:
-                dpName: zpool-iostat_bw-write
-                lineType: AREA
-                stacked: true
-                colorindex: 0
-              Read:
-                dpName: zpool-iostat_bw-read
-                lineType: LINE
-                lineWidth: 1
-                colorindex: 1
-
-      ZVDev:
-        targetPythonClass: ZenPacks.daviswr.ZFS.ZVDev
-        datasources:
-          zpool-iostat:
-            type: COMMAND
-            usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -v"
-            parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
-            cycletime: 60
-            component: "${here/id}"
-            datapoints:
-              bw-read: DERIVE_MIN_0
-              bw-write: DERIVE_MIN_0
-              op-read: DERIVE_MIN_0
-              op-write: DERIVE_MIN_0
-        graphs:
-          DEFAULTS:
-            miny: 0
           Activity:
             units: IOPS
             graphpoints:

@@ -12,7 +12,7 @@ class get(CommandParser):
 
         pools = dict()
 
-        get_regex = r'^(?P<ds>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
+        get_regex = r'^(?P<ds>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
         for line in cmd.result.output.splitlines():
             get_match = re.match(get_regex, line)

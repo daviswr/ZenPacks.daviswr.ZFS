@@ -6,9 +6,9 @@ from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 class ZPool(CommandPlugin):
-    command = 'sudo /sbin/zpool get -pH all;' \
-        'sudo /sbin/zdb -L;' \
-        'sudo /sbin/zpool status -v'
+    command = '/usr/bin/sudo /sbin/zpool get -pH all;' \
+        '/usr/bin/sudo /sbin/zdb -L;' \
+        '/usr/bin/sudo /sbin/zpool status -v'
 
     def process(self, device, results, log):
         log.info(
@@ -25,7 +25,7 @@ class ZPool(CommandPlugin):
         last_vdev = None
         zpool_status = False
 
-        get_regex = r'^(?P<pool>\S+)\s+(?P<key>\S+)\s+(?P<value>\S+)\s+\S+$'
+        get_regex = r'^(?P<pool>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
         zdb_header_regex = r'(?P<key>\S+)\:$'
         zdb_kv_regex = r'\ {4}\s*(?P<key>\S+)\:\s?(?P<value>\S+)'
         status_pool_regex = r'^\s+pool: (?P<dev>\S+)$'
@@ -261,13 +261,13 @@ class ZPool(CommandPlugin):
                         data=comp
                         ))
                     root_rm_list.append(root_rm)
-                    # Child vDev components
+                    # Store Dev components
                     if len(children) > 0:
                         log.debug('Root vDev %s has children', comp['id'])
                         child_rm = RelationshipMap(
                             compname='zpools/pool_{0}/zrootVDevs/{1}'.format(pool, id_str),
-                            relname='zchildVDevs',
-                            modname='ZenPacks.daviswr.ZFS.ZChildVDev'
+                            relname='zstoreDevs',
+                            modname='ZenPacks.daviswr.ZFS.ZStoreDev'
                             )
                         for child in children:
                             comp = dict()
@@ -287,7 +287,7 @@ class ZPool(CommandPlugin):
                             comp['id'] = self.prepId(id_str)
                             log.debug('Found child vDev: %s', comp['id'])
                             child_rm.append(ObjectMap(
-                                modname='ZenPacks.daviswr.ZFS.ZChildVDev',
+                                modname='ZenPacks.daviswr.ZFS.ZStoreDev',
                                 data=comp
                                 ))
                             child_rm_list.append(child_rm)
