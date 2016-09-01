@@ -639,7 +639,7 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y 1 1"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE

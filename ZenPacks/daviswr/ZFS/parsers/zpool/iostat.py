@@ -20,7 +20,7 @@ class iostat(CommandParser):
     def processResults(self, cmd, result):
         components = dict()
         pools = dict()
-        iostat_regex = r'^(?P<pool>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+)\s+(?P<op_write>\d+)\s+(?P<bw_read>\S+)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\S+)(?P<bw_write_unit>\w)?$'
+        iostat_regex = r'^(?P<pool>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+)\s+(?P<op_write>\d+)\s+(?P<bw_read>\d+\.?\d?)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\d+\.?\d?)(?P<bw_write_unit>\w)?$'
 
         for line in cmd.result.output.splitlines():
             match = re.match(iostat_regex, line)
