@@ -17,10 +17,17 @@ class iostat(CommandParser):
         'Y': 1024**8,
         }
 
+    measures = [
+        'op_read',
+        'op_write',
+        'bw_read',
+        'bw_write',
+        ]
+
     def processResults(self, cmd, result):
         components = dict()
         pools = dict()
-        iostat_regex = r'^(?P<pool>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+)\s+(?P<op_write>\d+)\s+(?P<bw_read>\d+\.?\d?)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\d+\.?\d?)(?P<bw_write_unit>\w)?$'
+        iostat_regex = r'^(?P<pool>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+\.?\d?\d?)(?P<op_read_unit>\w)?\s+(?P<op_write>\d+\.?\d?\d?)(?P<op_write_unit>\w)?\s+(?P<bw_read>\d+\.?\d?\d?)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\d+\.?\d?\d?)(?P<bw_write_unit>\w)?$'
 
         for line in cmd.result.output.splitlines():
             match = re.match(iostat_regex, line)
@@ -46,15 +53,9 @@ class iostat(CommandParser):
     def process_iostat(self, match):
         stats = dict()
 
-        stats['op-read'] = int(match.group('op_read'))
-        stats['op-write'] = int(match.group('op_write'))
-
-        bw_read = float(match.group('bw_read'))
-        bw_read_unit = match.group('bw_read_unit')
-        stats['bw-read'] = bw_read * self.multi.get(bw_read_unit, 1)
-
-        bw_write = float(match.group('bw_write'))
-        bw_write_unit = match.group('bw_write_unit')
-        stats['bw-write'] = bw_write * self.multi.get(bw_write_unit, 1)
+        for measure in self.measures:
+            value = float(match.group(measure))
+            unit = match.group('{}_unit'.format(measure))
+            stats[measure.replace('_', '-')] =  value * self.multi.get(unit, 1)
 
         return stats
