@@ -649,6 +649,33 @@ device_classes:
         graphs:
           DEFAULTS:
             miny: 0
+          Activity:
+            units: IOPS
+            graphpoints:
+              Writes:
+                dpName: zpool-iostat_op-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Reads:
+                dpName: zpool-iostat_op-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+          Throughput:
+            units: bytes/sec
+            base: true
+            graphpoints:
+              Written:
+                dpName: zpool-iostat_bw-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Read:
+                dpName: zpool-iostat_bw-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
           Capacity:
             units: bytes
             base: true
@@ -686,33 +713,6 @@ device_classes:
                 lineType: LINE
                 lineWidth: 2
                 colorindex: 0
-          Activity:
-            units: IOPS
-            graphpoints:
-              Writes:
-                dpName: zpool-iostat_op-write
-                lineType: AREA
-                stacked: true
-                colorindex: 0
-              Reads:
-                dpName: zpool-iostat_op-read
-                lineType: LINE
-                lineWidth: 1
-                colorindex: 1
-          Throughput:
-            units: bytes/sec
-            base: true
-            graphpoints:
-              Written:
-                dpName: zpool-iostat_bw-write
-                lineType: AREA
-                stacked: true
-                colorindex: 0
-              Read:
-                dpName: zpool-iostat_bw-read
-                lineType: LINE
-                lineWidth: 1
-                colorindex: 1
 
       ZFSDataset:
         targetPythonClass: ZenPacks.daviswr.ZFS.ZFSDataset
