@@ -5,7 +5,7 @@ ZenPack to model & monitor ZFS pools and datasets
 ## Requirements
 
 * Solaris or Illumos-based OS, or Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/)
-  * Only tested with Debian 7 with ZoL 0.6.5 so far...
+  * Only tested against Debian 7 with ZoL 0.6.5 so far...
 * An account on the ZFS-capable host, which can
   * Log in via SSH with a key
   * Run the `zdb`, `zpool`, and `zfs` commands with certain parameters without password via `sudo`
