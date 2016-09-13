@@ -152,7 +152,7 @@ class ZPool(CommandPlugin):
             # rather than a child vdev in a logs/cache root
             elif status_root_match:
                 if 'cache' == last_type:
-                    dev = status_child_match.group('dev')
+                    dev = status_root_match.group('dev')
                     key = 'cache_{}'.format(dev)
                     if key not in last_tree:
                         last_tree[key] = dict()
