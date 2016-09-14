@@ -9,6 +9,12 @@ from Products.DataCollector.plugins.DataMaps \
 class ZFS(CommandPlugin):
     command = '/usr/bin/sudo /sbin/zfs get -pH all'
 
+    deviceProperties = CommandPlugin.deviceProperties + (
+        'zZFSDatasetIgnoreNames',
+        'zZFSDatasetIgnoreTypes',
+        'zZPoolIgnoreNames',
+        )
+
     def process(self, device, results, log):
         log.info(
             "Modeler %s processing data for device %s",
@@ -108,15 +114,40 @@ class ZFS(CommandPlugin):
             modname='ZenPacks.daviswr.ZFS.ZFSDataset'
             )
 
+        ignore_names_regex = getattr(device, 'zZFSDatasetIgnoreNames', '')
+        log.debug('zZFSDatasetIgnoreNames set to %s', ignore_names_regex)
+        ignore_types = getattr(device, 'zZFSDatasetIgnoreTypes', list())
+        log.debug('zZFSDatasetIgnoreTypes set to %s', str(ignore_types))
+        ignore_pools_regex = getattr(device, 'zZPoolIgnoreNames', '')
+        log.debug('zZPoolIgnoreNames set to %s', ignore_pools_regex)
+
         # Dataset components
         for pool in pools:
+            if ignore_pools_regex \
+                and re.match(ignore_pools_regex, pool):
+                log.info('%s skipping pool %s due to zZPoolIgnoreNames',
+                    self.name(), pool)
+                continue
+
             rm = RelationshipMap(
                 compname='zpools/pool_{}'.format(pool),
                 relname='zfsDatasets',
                 modname='ZenPacks.daviswr.ZFS.ZFSDataset'
                 )
+
             datasets = pools[pool]
             for ds in datasets:
+                if ignore_names_regex \
+                    and re.match(ignore_names_regex, ds):
+                    log.info('%s skipping dataset %s due to zZFSDatasetIgnoreNames',
+                        self.name(), ds)
+                    continue
+                elif ignore_types \
+                    and datasets[ds].get('zDsType', '') in ignore_types:
+                    log.info('%s skipping dataset %s due to zZFSDatasetIgnoreTypes',
+                        self.name(), ds)
+                    continue
+
                 comp = dict()
                 for key in datasets[ds]:
                     if key in booleans:

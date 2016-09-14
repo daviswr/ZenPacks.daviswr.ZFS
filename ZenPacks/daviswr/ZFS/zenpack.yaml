@@ -614,7 +614,16 @@ classes:
         default: on
         details_display: true
 
-
+zProperties:
+  DEFAULTS:
+    category: ZFS
+  zZFSDatasetIgnoreNames:
+    type: string
+  zZFSDatasetIgnoreTypes:
+    type: lines
+  zZPoolIgnoreNames:
+    type: string
+  
 device_classes:
   /:
     remove: false
@@ -646,6 +655,23 @@ device_classes:
               bw-write: GAUGE
               op-read: GAUGE
               op-write: GAUGE
+        thresholds:
+          Capacity-Warning:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - zpool-get_capacity
+            severity: 3
+            eventClass: /Storage
+            maxval: 80
+          Capacity-Error:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - zpool-get_capacity
+            severity: 4
+            eventClass: /Storage
+            maxval: 90
         graphs:
           DEFAULTS:
             miny: 0

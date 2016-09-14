@@ -18,11 +18,22 @@ Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y 1 1, /sbin/zpo
 Cmnd_Alias ZFS = /sbin/zfs get -pH all
 zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 ```
+## zProperties
+* `zZFSDatasetIgnoreNames`
+  * Regex of dataset names for the modeler to ignore
+* `zZFSDatasetIgnoreTypes`
+  * List of dataset types for the modeler to ignore. Valid types:
+    * filesystem
+    * snapshot
+    * volume
+* `zZPoolIgnoreNames`
+  * Regex of pool names for the modeler to ignore 
+
 ## Illumos notes
 Being a ZoL user, I don't have an Illumos system handy to develop against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`.
 
-That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) SmartOS-using [friends](https://github.com/baileytj3) have helped me with that.
+That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
 ## Usage
 
-I'm not going to make any assumptions about your device class organization, so it's up to you to configure the `daviswr.cmd.ZPool` and `daviswr.cmd.ZFS` modelers on the appropriate class or device. The ZPool modeler must be higher in the list of modelers than the ZFS one.
+I'm not going to make any assumptions about your device class organization, so it's up to you to configure the `daviswr.cmd.ZPool` and `daviswr.cmd.ZFS` modelers on the appropriate class or device. The ZPool modeler must be in the list of modelers before the ZFS one.

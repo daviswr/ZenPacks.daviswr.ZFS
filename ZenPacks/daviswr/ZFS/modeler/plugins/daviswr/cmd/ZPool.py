@@ -10,6 +10,10 @@ class ZPool(CommandPlugin):
         '/usr/bin/sudo /sbin/zdb -L;' \
         '/usr/bin/sudo /sbin/zpool status -v'
 
+    deviceProperties = CommandPlugin.deviceProperties + (
+        'zZPoolIgnoreNames',
+        )
+
     def process(self, device, results, log):
         log.info(
             "Modeler %s processing data for device %s",
@@ -202,8 +206,17 @@ class ZPool(CommandPlugin):
         root_rm_list = list()
         child_rm_list = list()
 
+        ignore_names_regex = getattr(device, 'zZPoolIgnoreNames', '')
+        log.debug('zZPoolIgnoreNames set to %s', ignore_names_regex)
+
         # Pool components
         for pool in pools:
+            if ignore_names_regex \
+                and re.match(ignore_names_regex, pool):
+                log.info('%s skipping pool %s due to zZPoolIgnoreNames',
+                    self.name(), pool)
+                continue
+
             comp = dict()
             for key in pools[pool]:
                 if key in booleans:
@@ -222,6 +235,7 @@ class ZPool(CommandPlugin):
                 modname='ZenPacks.daviswr.ZFS.ZPool',
                 data=comp
                 ))
+
             # Root vDev components
             roots = pools[pool].get('vdev_tree', None)
             if roots is not None:
@@ -261,6 +275,7 @@ class ZPool(CommandPlugin):
                         data=comp
                         ))
                     root_rm_list.append(root_rm)
+
                     # Store Dev components
                     if len(children) > 0:
                         log.debug('Root vDev %s has children', comp['id'])
