@@ -207,13 +207,14 @@ class ZPool(CommandPlugin):
         child_rm_list = list()
 
         ignore_names_regex = getattr(device, 'zZPoolIgnoreNames', '')
-        log.debug('zZPoolIgnoreNames set to %s', ignore_names_regex)
+        if ignore_names_regex:
+            log.info('zZPoolIgnoreNames set to %s', ignore_names_regex)
 
         # Pool components
         for pool in pools:
             if ignore_names_regex \
                 and re.match(ignore_names_regex, pool):
-                log.info('%s skipping pool %s due to zZPoolIgnoreNames',
+                log.debug('%s skipping pool %s due to zZPoolIgnoreNames',
                     self.name(), pool)
                 continue
 

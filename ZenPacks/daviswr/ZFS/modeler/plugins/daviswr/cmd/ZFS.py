@@ -115,17 +115,20 @@ class ZFS(CommandPlugin):
             )
 
         ignore_names_regex = getattr(device, 'zZFSDatasetIgnoreNames', '')
-        log.debug('zZFSDatasetIgnoreNames set to %s', ignore_names_regex)
+        if ignore_names_regex:
+            log.info('zZFSDatasetIgnoreNames set to %s', ignore_names_regex)
         ignore_types = getattr(device, 'zZFSDatasetIgnoreTypes', list())
-        log.debug('zZFSDatasetIgnoreTypes set to %s', str(ignore_types))
+        if ignore_types:
+            log.info('zZFSDatasetIgnoreTypes set to %s', str(ignore_types))
         ignore_pools_regex = getattr(device, 'zZPoolIgnoreNames', '')
-        log.debug('zZPoolIgnoreNames set to %s', ignore_pools_regex)
+        if ignore_pools_regex:
+            log.info('zZPoolIgnoreNames set to %s', ignore_pools_regex)
 
         # Dataset components
         for pool in pools:
             if ignore_pools_regex \
                 and re.match(ignore_pools_regex, pool):
-                log.info('%s skipping pool %s due to zZPoolIgnoreNames',
+                log.debug('%s skipping pool %s due to zZPoolIgnoreNames',
                     self.name(), pool)
                 continue
 
@@ -139,12 +142,12 @@ class ZFS(CommandPlugin):
             for ds in datasets:
                 if ignore_names_regex \
                     and re.match(ignore_names_regex, ds):
-                    log.info('%s skipping dataset %s due to zZFSDatasetIgnoreNames',
+                    log.debug('%s skipping dataset %s due to zZFSDatasetIgnoreNames',
                         self.name(), ds)
                     continue
                 elif ignore_types \
                     and datasets[ds].get('zDsType', '') in ignore_types:
-                    log.info('%s skipping dataset %s due to zZFSDatasetIgnoreTypes',
+                    log.debug('%s skipping dataset %s due to zZFSDatasetIgnoreTypes',
                         self.name(), ds)
                     continue
 
