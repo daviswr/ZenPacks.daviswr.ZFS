@@ -8,12 +8,13 @@ from Products.ZenUtils.Utils \
 class get(CommandParser):
 
     def processResults(self, cmd, result):
-        components = dict()
-
-        pools = dict()
-
+        """"
+        Example output
+        pool0	size	399431958528	-
+        """
         get_regex = r'^(?P<pool>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
+        pools = dict()
         for line in cmd.result.output.splitlines():
             get_match = re.match(get_regex, line)
 
@@ -43,6 +44,7 @@ class get(CommandParser):
 
         datapoints += floats
 
+        components = dict()
         for pool in pools:
             comp_id = prepId('pool_{}'.format(pool))
             if comp_id not in components:
