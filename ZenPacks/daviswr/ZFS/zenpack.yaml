@@ -746,7 +746,7 @@ device_classes:
           zfs-get:
             type: COMMAND
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all"
+            commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all ${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             cycletime: 60
             component: "${here/id}"

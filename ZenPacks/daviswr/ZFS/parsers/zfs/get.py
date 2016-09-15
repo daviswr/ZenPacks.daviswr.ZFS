@@ -8,33 +8,25 @@ from Products.ZenUtils.Utils \
 class get(CommandParser):
 
     def processResults(self, cmd, result):
-        components = dict()
-
-        pools = dict()
-
+        """
+        Example output
+        pool0/home	used	299133114880	-
+        """
         get_regex = r'^(?P<ds>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
+        ds = dict()
         for line in cmd.result.output.splitlines():
             get_match = re.match(get_regex, line)
 
             if get_match:
-                ds = get_match.group('ds')
-                pool = ds.split('/')[0]
                 key = get_match.group('key')
                 value = get_match.group('value')
-                if pool not in pools:
-                    pools[pool] = dict()
-                if ds not in pools[pool]:
-                    pools[pool][ds] = dict()
                 if value.endswith('%') \
                     or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
-                elif value == '-':
+                elif '-' == value:
                     value = None
-                elif key == 'type':
-                    pools[pool][ds]['zDsType'] = value
-                    continue
-                pools[pool][ds][key] = value
+                ds[key] = value
 
         datapoints = [
             'available',
@@ -48,25 +40,11 @@ class get(CommandParser):
             'usedbysnapshots',
             ]
 
-        prefixes = {
-            'filesystem': 'fs',
-            'volume': 'vol',
-            'snapshot': 'snap'
-            }
-
-        for pool in pools:
-            datasets = pools[pool]
-            for ds in datasets:
-                prefix = prefixes.get(datasets[ds].get('zDsType'), '')
-                comp_id = prepId('{0}_{1}'.format(prefix, ds))
-                if comp_id not in components:
-                    components[comp_id] = dict()
-                for measure in datapoints:
-                    if measure in datasets[ds]:
-                        components[comp_id][measure] = int(datasets[ds].get(measure))
+        values = dict()
+        for measure in datapoints:
+            if measure in ds:
+                values[measure] = int(ds[measure])
 
         for point in cmd.points:
-            if point.component in components:
-                values = components[point.component]
-                if point.id in values:
-                    result.values.append((point, values[point.id]))
+            if point.id in values:
+                result.values.append((point, values[point.id]))
