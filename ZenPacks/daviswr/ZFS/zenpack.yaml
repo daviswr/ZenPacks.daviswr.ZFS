@@ -623,6 +623,15 @@ zProperties:
     type: lines
   zZPoolIgnoreNames:
     type: string
+  zZPoolThresholdWarning:
+    type: int
+    default: 80
+  zZPoolThresholdError:
+    type: int
+    default: 85
+  zZPoolThresholdCritical:
+    type: int
+    default: 90
   
 device_classes:
   /:
@@ -663,7 +672,7 @@ device_classes:
               - zpool-get_capacity
             severity: 3
             eventClass: /Storage
-            maxval: 80
+            maxval: device.zZPoolThresholdWarning
           Capacity-Error:
             type: MinMaxThreshold
             enabled: true
@@ -671,7 +680,15 @@ device_classes:
               - zpool-get_capacity
             severity: 4
             eventClass: /Storage
-            maxval: 90
+            maxval: device.zZPoolThresholdError
+          Capacity-Critical:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - zpool-get_capacity
+            severity: 5
+            eventClass: /Storeage
+            maxval: device.zZPoolThresholdCritical
         graphs:
           DEFAULTS:
             miny: 0
