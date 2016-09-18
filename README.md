@@ -15,7 +15,7 @@ Example entries in `/etc/sudoers`
 ```
 Cmnd_Alias ZDB = /sbin/zdb -L
 Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y 1 1, /sbin/zpool status -v
-Cmnd_Alias ZFS = /sbin/zfs get -pH all, /sbin/zfs get -pH all *
+Cmnd_Alias ZFS = /sbin/zfs get -pH all *
 zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 ```
 ## zProperties
