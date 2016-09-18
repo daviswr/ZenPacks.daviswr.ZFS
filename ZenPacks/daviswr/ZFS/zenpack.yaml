@@ -672,7 +672,7 @@ device_classes:
               - zpool-get_capacity
             severity: 3
             eventClass: /Storage
-            maxval: device.zZPoolThresholdWarning
+            maxval: here.zZPoolThresholdWarning
           Capacity-Error:
             type: MinMaxThreshold
             enabled: true
@@ -680,7 +680,7 @@ device_classes:
               - zpool-get_capacity
             severity: 4
             eventClass: /Storage
-            maxval: device.zZPoolThresholdError
+            maxval: here.zZPoolThresholdError
           Capacity-Critical:
             type: MinMaxThreshold
             enabled: true
@@ -688,7 +688,7 @@ device_classes:
               - zpool-get_capacity
             severity: 5
             eventClass: /Storeage
-            maxval: device.zZPoolThresholdCritical
+            maxval: here.zZPoolThresholdCritical
         graphs:
           DEFAULTS:
             miny: 0
