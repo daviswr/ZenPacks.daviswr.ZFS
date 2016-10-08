@@ -275,7 +275,6 @@ class ZPool(CommandPlugin):
                         modname='ZenPacks.daviswr.ZFS.ZRootVDev',
                         data=comp
                         ))
-                    root_rm_list.append(root_rm)
 
                     # Store Dev components
                     if len(children) > 0:
