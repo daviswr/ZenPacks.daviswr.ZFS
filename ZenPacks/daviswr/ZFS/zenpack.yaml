@@ -13,6 +13,13 @@ classes:
   ZPool:
     label: ZFS Storage Pool
     short_label: Pool
+    relationships:
+      zrootVDevs:
+        label_width: 60
+        content_width: 60
+      zfsDatasets:
+        label_width: 60
+        content_width: 60
     properties:
       DEFAULTS:
         grid_display: false
@@ -25,6 +32,7 @@ classes:
         datapoint: zpool-get_allocated
         grid_display: true
         details_display: true
+        order: 2
       altroot:
         label: Alternate Root
         short_label: Alt Root
@@ -38,12 +46,14 @@ classes:
         type: boolean
         default: false
         details_display: true
+        order: 8
       autoreplace:
         label: Automatic Device Replacement
         short_label: Auto-Replace
         type: boolean
         default: false
         details_display: true
+        order: 10
       bootfs:
         label: Bootable Dataset
         short_label: Boot FS
@@ -53,6 +63,7 @@ classes:
         short_label: Cache
         type: string
         details_display: true
+        order: 9
       capacity:
         label: Percent Used
         short_label: "Capacity %"
@@ -61,10 +72,14 @@ classes:
         datapoint: zpool-get_capacity
         grid_display: true
         details_display: true
+        content_width: 50
+        label_width: 50
+        order: 4
       comment:
         label: Comment
         type: string
         details_display: true
+        order: 13
       dedupditto:
         label: Block Ditto Threshold
         type: int
@@ -74,6 +89,7 @@ classes:
         type: float
         datapoint: zpool-get_dedupratio
         details_display: true
+        order: 6
       delegation:
         label: Delegation
         type: boolean
@@ -83,19 +99,25 @@ classes:
       expandsize:
         label: Uninitialized Space
         short_label: Uninit
-        type: string
+        type: int
+        renderer: Zenoss.render.bytesString
+        default: 0
         details_display: true
+        order: 7
       failmode:
         label: Failure Mode
         type: string
         default: wait
       fragmentation:
-        label: Fragmentation
+        label: Fragmentation Percentage
         short_label: "Frag %"
         type: float
         datapoint: zpool-get_fragmentation
         grid_display: true
         details_display: true
+        content_width: 30
+        label_width: 30
+        order: 5
       free:
         label: Free Space
         short_label: Free
@@ -104,6 +126,7 @@ classes:
         datapoint: zpool-get_free
         grid_display: true
         details_display: true
+        order: 3
       freeing:
         label: Reclaimable Space
         short_label: Reclaim
@@ -128,8 +151,10 @@ classes:
         label: Read-Only
         short_label: RO
         type: boolean
-        grid_display: true
         details_display: true
+        label_width: 25
+        content_width: 25
+        order: 11
       size:
         label: Total Space
         short_label: Space
@@ -137,6 +162,7 @@ classes:
         renderer: Zenoss.render.bytesString
         grid_display: true
         details_display: true
+        order: 1
       state:
         type: int
       version:
@@ -144,6 +170,7 @@ classes:
         short_label: Ver
         type: string
         details_display: true
+        order: 12
 
   ZVDev:
     label: ZFS Virtual Device
@@ -157,6 +184,7 @@ classes:
         label: Type
         # mirror, raidz, disk/file, spare(?)
         details_display: true
+        order: 11
       ashift:
         type: int
       guid:
@@ -166,10 +194,12 @@ classes:
       path:
         label: Path
         details_display: true
+        order: 10
       whole_disk:
         label: Whole Disk
         type: boolean
         details_display: true
+        order: 12
 
   ZRootVDev:
     base: [ZVDev]
@@ -186,18 +216,21 @@ classes:
         renderer: Zenoss.render.bytesString
         grid_display: true
         details_display: true
+        order: 9
       is_cache:
         label: Cache Device
         short_label: Cache
         type: boolean
         default: false
         details_display: true
+        order: 20
       is_log:
         label: Log Device
         short_label: Log
         type: boolean
         default: false
         details_display: true
+        order: 21
 
   ZStoreDev:
     base: [ZVDev]
@@ -211,6 +244,9 @@ classes:
   ZFSDataset:
     label: ZFS Dataset
     short_label: Dataset
+    relationships:
+      zpool:
+        grid_display: false
     properties:
       DEFAULTS:
         grid_display: false
@@ -235,6 +271,7 @@ classes:
         datapoint: zfs-get_available
         grid_display: true
         details_display: true
+        order: 10
       atime:
         label: Access Time
         short_label: atime
@@ -244,6 +281,7 @@ classes:
         label: Mountable
         type: string
         details_display: true
+        order: 3
       checksum:
         label: Checksum
         type: string
@@ -254,24 +292,28 @@ classes:
         type: string
         default: off
         details_display: true
+        order: 28
       copies:
         label: Data Copies
         short_label: Copies
         type: int
         default: 1
         details_display: true
+        order: 26
       creation:
         label: Creation Time
         short_label: Created
         # Convert from Unix time in modeler
         type: string
         details_display: true
+        order: 1
       dedup:
         label: Deduplication
         short_label: Dedup
         type: string
         default: off
         details_display: true
+        order: 27
       filesystem_count:
         label: Child Datasets
         short_label: Children
@@ -291,6 +333,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_logicalreferenced
         details_display: true
+        order: 17
       logicalused:
         label: Logical Used Space
         short_label: Logical Used
@@ -298,6 +341,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_logicalused
         details_display: true
+        order: 16
       mlslabel:
         label: Trusted Ext Zone Label
         short_label: Zone Label
@@ -308,6 +352,7 @@ classes:
         type: string
         default: all
         details_display: true
+        order: 35
       quota:
         label: Space Quota
         short_label: Quota
@@ -315,16 +360,19 @@ classes:
         renderer: Zenoss.render.bytesString
         default: 0
         details_display: true
+        order: 18
       redundant_metadata:
         label: Redundant Metadata
         type: string
         default: all
         details_display: true
+        order: 25
       refcompressratio:
         label: Referenced Compression Ratio
         short_label: Ref Compress
         type: float
         details_display: true
+        order: 24
       referenced:
         label: Referenced Data
         short_label: Referenced
@@ -332,6 +380,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-referenced
         details_display: true
+        order: 21
       refquota:
         label: Reference Quota
         short_label: Ref Quota
@@ -339,6 +388,7 @@ classes:
         renderer: Zenoss.render.bytesString
         default: 0
         details_display: true
+        order: 23
       refreserveration:
         label: Reference Reservation
         short_label: Ref Reserved
@@ -346,6 +396,7 @@ classes:
         renderer: Zenoss.render.bytesString
         default: 0
         details_display: true
+        order: 22
       relatime:
         label: Relative Access Time
         short_label: relatime
@@ -358,11 +409,13 @@ classes:
         renderer: Zenoss.render.bytesString
         default: 0
         details_display: true
+        order: 19
       secondarycache:
         label: L2ARC
         type: string
         default: all
         details_display: true
+        order: 36
       snapdev:
         label: Snapshot Devices
         short_label: Snap Dev
@@ -393,6 +446,7 @@ classes:
         datapoint: zfs-get_used
         grid_display: true
         details_display: true
+        order: 11
       usedbychildren:
         label: Used by Children
         short_label: Child Used
@@ -400,6 +454,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_usedbychildren
         details_display: true
+        order: 15
       usedbydataset:
         label: Used by Dataset
         short_label: Dataset Used
@@ -407,6 +462,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_usedbydataset
         details_display: true
+        order: 12
       usedbyrefreservation:
         label: Used by Ref Reservation
         short_label: Ref Used
@@ -414,6 +470,7 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_usedbyrefreservation
         details_display: true
+        order: 13
       usedbysnapshots:
         label: Used by Snapshots
         short_label: Used Snap
@@ -421,23 +478,27 @@ classes:
         renderer: Zenoss.render.bytesString
         datapoint: zfs-get_usedbysnapshots
         details_display: true
+        order: 14
       vscan:
         label: Virus Scan
         type: boolean
         default: false
         details_display: true
+        order: 37
       written:
         label: Reference Space Written
         short_label: Written
         type: int
         renderer: Zenoss.render.bytesString
         details_display: true
+        order: 20
       zoned:
         label: Non-Global Zone
         short_label: Zoned
         type: boolean
         default: false
         details_display: true
+        order: 38
 
   ZFSSnap:
     base: [ZFSDataset]
@@ -451,6 +512,7 @@ classes:
         label: Clones
         type: string
         details_display: true
+        order: 3
       defer_destroy:
         label: Deferred Destruction
         type: boolean
@@ -472,17 +534,24 @@ classes:
         short_label: Compress
         type: float
         details_display: true
+        order: 30
       origin:
         label: Origin Snapshot
         short_label: Origin
         type: string
+        default: "N/A"
         details_display: true
+        order: 3
       shareisci:
         label: iSCSI Target
         short_label: iSCSI
         type: string
         default: off
+        grid_display: true
         details_display: true
+        content_width: 30
+        label_width: 30
+        order: 7
       volblocksize:
         label: Block Size
         short_label: Block
@@ -495,6 +564,7 @@ classes:
         renderer: Zenoss.render.bytesString
         grid_display: true
         details_display: true
+        order: 5
 
   ZFS:
     base: [ZFSDataset]
@@ -514,6 +584,7 @@ classes:
         short_label: Compress
         type: float
         details_display: true
+        order: 30
       context:
         label: SELinux File Context
         short_label: File Context
@@ -543,14 +614,19 @@ classes:
         label: Mounted
         type: boolean
         default: true
+        enum: {true: "clear", false: "debug"}
+        renderer: Zenoss.render.severity
         grid_display: true
-        details_display: true
+        content_width: 40
+        label_width: 40
+        order: 6
       mountpoint:
         label: Mount Point
         short_label: Path
         type: string
         grid_display: true
         details_display: true
+        order: 5
       nbmand:
         label: Non-Blocking Mandatory Locks
         type: boolean
@@ -563,7 +639,9 @@ classes:
         label: Origin Snapshot
         short_label: Origin
         type: string
+        default: "N/A"
         details_display: true
+        order: 3
       overlay:
         label: Overlay Mount
         short_label: Overlay
@@ -590,6 +668,9 @@ classes:
         default: off
         grid_display: true
         details_display: true
+        content_width: 30
+        label_width: 30
+        order: 7
       sharesmb:
         label: SMB Share
         short_label: SMB
@@ -597,11 +678,15 @@ classes:
         default: off
         grid_display: true
         details_display: true
+        content_width: 30
+        label_width: 30
+        order: 8
       version:
         label: Version
         short_label: Ver
         type: string
         details_display: true
+        order: 50
       utf8only:
         label: UTF-8 Only
         short_label: UTF8
@@ -613,6 +698,7 @@ classes:
         type: string
         default: on
         details_display: true
+        order: 45
 
 zProperties:
   DEFAULTS:
@@ -811,7 +897,6 @@ device_classes:
                 dpName: zfs-get_usedbychildren
                 colorindex: 3
           Logical Capacity:
-            # TODO: work out stacking, RPN, etc
             graphpoints:
               Used:
                 dpName: zfs-get_logicalused
