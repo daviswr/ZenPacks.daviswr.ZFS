@@ -154,7 +154,10 @@ class ZFS(CommandPlugin):
                 comp = dict()
                 for key in datasets[ds]:
                     if key in booleans:
-                        comp[key] = True if ('on' == datasets[ds][key] or 'yes' == datasets[ds][key]) else False
+                        comp[key] = True \
+                            if ('on' == datasets[ds][key] \
+                                or 'yes' == datasets[ds][key]) \
+                            else False
                     elif key in floats:
                         comp[key] = float(datasets[ds][key])
                     elif key in ints:
