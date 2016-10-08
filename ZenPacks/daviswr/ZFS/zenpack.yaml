@@ -13,6 +13,7 @@ classes:
   ZPool:
     label: ZFS Storage Pool
     short_label: Pool
+    order: 10
     relationships:
       zrootVDevs:
         label_width: 60
@@ -175,6 +176,7 @@ classes:
   ZVDev:
     label: ZFS Virtual Device
     short_label: VDev
+    order: 11
     properties:
       DEFAULTS:
         type: string
@@ -205,6 +207,7 @@ classes:
     base: [ZVDev]
     label: ZFS Root Virtual Device
     short_label: Root VDev
+    order: 12
     properties:
       DEFAULTS:
         grid_display: false
@@ -236,6 +239,7 @@ classes:
     base: [ZVDev]
     label: ZFS Storage Device
     short_label: Store
+    order: 13
     properties:
       DEFAULTS:
         grid_display: false
@@ -244,6 +248,7 @@ classes:
   ZFSDataset:
     label: ZFS Dataset
     short_label: Dataset
+    order: 20
     relationships:
       zpool:
         grid_display: false
@@ -504,6 +509,7 @@ classes:
     base: [ZFSDataset]
     label: ZFS Snapshot
     short_label: Snapshot
+    order: 23
     properties:
       DEFAULTS:
         grid_display: false
@@ -525,6 +531,7 @@ classes:
     base: [ZFSDataset]
     label: ZFS Volume
     short_label: Volume
+    order: 22
     properties:
       DEFAULTS:
         grid_display: false
@@ -570,6 +577,7 @@ classes:
     base: [ZFSDataset]
     label: ZFS File System
     short_label: File System
+    order: 21
     properties:
       DEFAULTS:
         grid_display: false
