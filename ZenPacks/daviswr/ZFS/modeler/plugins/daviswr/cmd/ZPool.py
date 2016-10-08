@@ -306,13 +306,12 @@ class ZPool(CommandPlugin):
                                 modname='ZenPacks.daviswr.ZFS.ZStoreDev',
                                 data=comp
                                 ))
-                            child_rm_list.append(child_rm)
+                        child_rm_list.append(child_rm)
+                root_rm_list.append(root_rm)
 
         maps.append(pool_rm)
-        for rm in root_rm_list:
-            maps.append(rm)
-        for rm in child_rm_list:
-            maps.append(rm)
+        maps += root_rm_list
+        maps += child_rm_list
 
         log.debug(
             'ZPool RelMap:\n%s',
