@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.7.4] - 2016-10-08
+### Changed
+ * Tweaks to component detail display order, grid column widths, etc
+
+### Fixed
+ * ZPool modeler redundantly processing Relationship Maps
+
 ## [0.7.3] - 2016-09-18
 ### Added
  * ZPool capacity thresholds configurable via zProperties:
@@ -32,7 +39,8 @@
  * Alpha release
 
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.3...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.4...HEAD
+[0.7.4]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.1...0.7.2 
 [0.7.1]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.0...0.7.1
