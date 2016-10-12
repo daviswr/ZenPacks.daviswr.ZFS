@@ -15,7 +15,7 @@ Example entries in `/etc/sudoers`
 ```
 Cmnd_Alias ZDB = /sbin/zdb -L
 Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y 1 1, /sbin/zpool status -v
-Cmnd_Alias ZFS = /sbin/zfs get -pH all *
+Cmnd_Alias ZFS = /sbin/zfs get -pH all, /sbin/zfs get -pH all *
 zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 ```
 ## zProperties
@@ -36,7 +36,7 @@ zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
   * Capacity percentage for critical threshold. Default 90.
 
 ## Illumos notes
-Being a ZoL user, I don't have an Illumos system handy to develop against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`.
+Being a ZoL user, I don't have an Illumos system handy to develop against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
 
 That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
