@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
  * Basic pool and vdev health check
+   * Changes to `sudoers` config on monitored system(s) may be requried
 
 ## [0.7.4] - 2016-10-08
 ### Changed
