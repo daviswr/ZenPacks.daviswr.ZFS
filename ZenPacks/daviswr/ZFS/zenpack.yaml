@@ -197,6 +197,8 @@ classes:
         label: Path
         details_display: true
         order: 10
+      pool:
+        label: ZPool
       whole_disk:
         label: Whole Disk
         type: boolean
@@ -208,6 +210,10 @@ classes:
     label: ZFS Root Virtual Device
     short_label: Root VDev
     order: 12
+    relationships:
+      zstoreDevs:
+        content_width: 45
+        label_width: 45
     properties:
       DEFAULTS:
         grid_display: false
@@ -225,14 +231,20 @@ classes:
         short_label: Cache
         type: boolean
         default: false
+        grid_display: true
         details_display: true
+        content_width: 25
+        label_width: 25
         order: 20
       is_log:
         label: Log Device
         short_label: Log
         type: boolean
         default: false
+        grid_display: true
         details_display: true
+        content_width: 20
+        label_width: 20
         order: 21
 
   ZStoreDev:
@@ -708,6 +720,7 @@ classes:
         details_display: true
         order: 45
 
+
 zProperties:
   DEFAULTS:
     category: ZFS
@@ -727,6 +740,7 @@ zProperties:
     type: int
     default: 90
   
+
 device_classes:
   /:
     remove: false
@@ -758,6 +772,13 @@ device_classes:
               bw-write: GAUGE
               op-read: GAUGE
               op-write: GAUGE
+          zpool-status:
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zpool status -x ${here/title}"
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
+            datapoints:
+              health: GAUGE
+
         thresholds:
           Capacity-Warning:
             type: MinMaxThreshold
@@ -781,8 +802,17 @@ device_classes:
             dsnames:
               - zpool-get_capacity
             severity: 5
-            eventClass: /Storeage
+            eventClass: /Storage
             maxval: here.zZPoolThresholdCritical
+          Health:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - zpool-status_health
+            severity: 5
+            eventClass: /Storage
+            maxval: 0
+
         graphs:
           DEFAULTS:
             miny: 0
@@ -851,16 +881,41 @@ device_classes:
                 lineWidth: 2
                 colorindex: 0
 
+
+      ZFSVirtualDevice:
+        datasources:
+          DEFAULTS:
+            type: COMMAND
+            cycletime: 60
+            component: "${here/id}"
+          zpool-status:
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zpool status -x ${here/pool} | /bin/grep -e healthy -e ${here/title}"
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
+            datapoints:
+              health: GAUGE
+        thresholds:
+          Health:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - zpool-status_health
+            severity: 5
+            eventClass: /Storage
+            maxval: 0
+
+
       ZFSDataset:
         targetPythonClass: ZenPacks.daviswr.ZFS.ZFSDataset
         datasources:
-          zfs-get:
+          DEFAULTS:
             type: COMMAND
+            cycletime: 60
+            component: "${here/id}"
+          zfs-get:
             usessh: true
             commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all ${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
-            cycletime: 60
-            component: "${here/id}"
             datapoints:
               available: GAUGE
               logicalreferenced: GAUGE
@@ -871,6 +926,7 @@ device_classes:
               usedbydataset: GAUGE
               usedbyrefreservation: GAUGE
               usedbysnapshots: GAUGE
+
         graphs:
           DEFAULTS:
             miny: 0

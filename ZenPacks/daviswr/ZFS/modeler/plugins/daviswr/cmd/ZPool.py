@@ -265,6 +265,7 @@ class ZPool(CommandPlugin):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
+                    comp['pool'] = pool
                     id_str = '{0}_{1}'.format(
                         pool,
                         comp.get('title', '').replace('-', '_')
@@ -295,6 +296,7 @@ class ZPool(CommandPlugin):
                                     comp['VDevType'] = child[key]
                                 elif not key == 'name':
                                     comp[key] = child[key]
+                            comp['pool'] = pool
                             id_str = '{0}_{1}'.format(
                                 pool,
                                 comp.get('title', '').replace('-', '_')

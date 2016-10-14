@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+ * Basic pool and vdev health check
 
 ## [0.7.4] - 2016-10-08
 ### Changed
