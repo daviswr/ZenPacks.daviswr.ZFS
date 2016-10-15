@@ -128,8 +128,7 @@ class ZFS(CommandPlugin):
         for pool in pools:
             if ignore_pools_regex \
                 and re.match(ignore_pools_regex, pool):
-                log.debug('%s skipping pool %s due to zZPoolIgnoreNames',
-                    self.name(), pool)
+                log.debug('Skipping pool %s due to zZPoolIgnoreNames', pool)
                 continue
 
             rm = RelationshipMap(
@@ -142,13 +141,17 @@ class ZFS(CommandPlugin):
             for ds in datasets:
                 if ignore_names_regex \
                     and re.match(ignore_names_regex, ds):
-                    log.debug('%s skipping dataset %s due to zZFSDatasetIgnoreNames',
-                        self.name(), ds)
+                    log.debug(
+                        'Skipping dataset %s due to zZFSDatasetIgnoreNames',
+                        ds
+                        )
                     continue
                 elif ignore_types \
                     and datasets[ds].get('zDsType', '') in ignore_types:
-                    log.debug('%s skipping dataset %s due to zZFSDatasetIgnoreTypes',
-                        self.name(), ds)
+                    log.debug(
+                        'Skipping dataset %s due to zZFSDatasetIgnoreTypes',
+                        ds
+                        )
                     continue
 
                 comp = dict()
