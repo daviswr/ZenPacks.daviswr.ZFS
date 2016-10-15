@@ -41,5 +41,11 @@ Being a ZoL user, I don't have an Illumos system handy to develop against, so ev
 That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
 ## Usage
-
+### Modelers
 I'm not going to make any assumptions about your device class organization, so it's up to you to configure the `daviswr.cmd.ZPool` and `daviswr.cmd.ZFS` modelers on the appropriate class or device. The ZPool modeler must be in the list of modelers before the ZFS one.
+
+### Zenoss configuration
+I've found that reducing `zSshConcurrentSessions` on the device or class from 10 to maybe 5 helps with problems due to overrunning a monitored system's available SSH channels.
+
+### ZPool I/O stats
+The `zpool-iostat` datasource **will** miss data since it's only noting what's happened in the last second when it polls. While an actual counter would be nice, that's the only source of pool activity information I can find. Any suggestions would be appreciated.
