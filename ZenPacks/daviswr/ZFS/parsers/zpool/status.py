@@ -45,6 +45,7 @@ class status(CommandParser):
         # An event transform will have to make this human-readable again
         health_map = {
             'ONLINE': 0,
+            'AVAIL': 0,
             'DEGRADED': 1,
             'FAULTED': 2,
             'OFFLINE': 3,

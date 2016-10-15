@@ -226,32 +226,42 @@ classes:
         grid_display: true
         details_display: true
         order: 9
-      is_cache:
-        label: Cache Device
-        short_label: Cache
-        type: boolean
-        default: false
-        grid_display: true
-        details_display: true
-        content_width: 25
-        label_width: 25
-        order: 20
-      is_log:
-        label: Log Device
-        short_label: Log
-        type: boolean
-        default: false
-        grid_display: true
-        details_display: true
-        content_width: 20
-        label_width: 20
-        order: 21
+
+  ZCacheDev:
+    base: [ZRootVDev]
+    label: ZFS Cache Device
+    short_label: Cache Dev
+    order: 13
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
+
+  ZLogDev:
+    base: [ZRootVDev]
+    label: ZFS Log Device
+    short_label: Log Dev
+    order: 14
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
+
+  ZSpareDev:
+    base: [ZRootVDev]
+    label: ZFS Spare Device
+    short_label: Spare Dev
+    order: 15
+    properties:
+      DEFAULTS:
+        grid_display: false
+        details_display: false
 
   ZStoreDev:
     base: [ZVDev]
     label: ZFS Storage Device
-    short_label: Store
-    order: 13
+    short_label: Store Dev
+    order: 16
     properties:
       DEFAULTS:
         grid_display: false

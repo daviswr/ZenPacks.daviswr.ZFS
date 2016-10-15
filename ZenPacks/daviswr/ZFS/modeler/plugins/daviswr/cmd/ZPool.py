@@ -35,6 +35,7 @@ class ZPool(CommandPlugin):
         status_pool_regex = r'^\s+pool: (?P<dev>\S+)$'
         status_logs_regex = r'^\s+logs$'
         status_cache_regex = r'^\s+cache$'
+        status_spare_regex = r'^\s+spares$'
         status_dev_regex = r'(?P<dev>\S+)\s+\S+(?:\s+\d+){3}$'
 
         for line in results.splitlines():
@@ -48,6 +49,7 @@ class ZPool(CommandPlugin):
                 or re.match(r'^\t' + status_dev_regex, line)
             status_logs_match = re.match(status_logs_regex, line)
             status_cache_match = re.match(status_cache_regex, line)
+            status_spare_match = re.match(status_spare_regex, line)
             status_root_match = re.match(r'^\t  ' + status_dev_regex, line)
             status_child_match = re.match(r'^\t    ' + status_dev_regex, line)
 
@@ -103,11 +105,14 @@ class ZPool(CommandPlugin):
                 # ZenModeler does not like these in the RelMap
                 elif key in ['hostid', 'hostname']:
                     continue
-                elif key == 'name':
+                elif 'name' == key:
                     last_parent['title'] = value
                     continue
-                elif key == 'pool_guid':
+                elif 'pool_guid' == key:
                     last_parent['guid'] = value
+                    continue
+                # Spare devices will be modeled based on 'zpool status' output
+                elif 'type' == key and 'spare' == value:
                     continue
                 last_parent[key] = value
                 # disk type
@@ -151,29 +156,40 @@ class ZPool(CommandPlugin):
             elif status_cache_match:
                 last_type = 'cache'
 
+            elif status_spare_match:
+                last_type = 'spare'
+
             # Emulate structure in zdb output for log devices
             # Each device is a root vdev,
             # rather than a child vdev in a logs/cache root
             elif status_root_match:
-                if 'cache' == last_type:
+                if 'cache' == last_type or 'spare' == last_type:
                     dev = status_root_match.group('dev')
-                    key = 'cache_{}'.format(dev)
+                    key = '{0}_{1}'.format(last_type, dev)
                     if key not in last_tree:
                         last_tree[key] = dict()
                     last_root = last_tree[key]
                     last_root['title'] = dev
-                    last_root['is_cache'] = '1'
-                    last_root['is_log'] = '0'
+                    for boolean in ['cache', 'log', 'spare']:
+                        last_root['is_{}'.format(boolean)] = '0'
+                    last_root['is_{}'.format(last_type)] = '1'
 
             elif status_child_match:
                 last_type = 'child'
-                
+
         booleans = [
             'autoexpand',
             'autoreplace',
             'delegation',
             'listsnapshots',
             'readonly',
+            ]
+
+        dev_booleans = [
+            'is_cache',
+            'is_log',
+            'is_spare',
+            'whole_disk',
             ]
 
         ints = [
@@ -214,8 +230,10 @@ class ZPool(CommandPlugin):
         for pool in pools:
             if ignore_names_regex \
                 and re.match(ignore_names_regex, pool):
-                log.debug('%s skipping pool %s due to zZPoolIgnoreNames',
-                    self.name(), pool)
+                log.debug(
+                    'Skipping pool %s due to zZPoolIgnoreNames',
+                    pool
+                    )
                 continue
 
             comp = dict()
@@ -248,20 +266,24 @@ class ZPool(CommandPlugin):
                     )
                 for key in roots.keys():
                     if not key.startswith('children') \
-                        and not key.startswith('cache_'):
+                        and not key.startswith('cache_') \
+                        and not key.startswith('spare_'):
                         del roots[key]
                 for root in roots:
                     comp = dict()
                     children = list()
                     for key in roots[root]:
-                        if key in ['is_cache', 'is_log', 'whole_disk']:
-                            comp[key] = True if ('1' == roots[root][key]) else False
+                        if key in dev_booleans:
+                            comp[key] = True \
+                                if '1' == roots[root][key] \
+                                else False
                         elif key in ints:
                             comp[key] = int(roots[root][key])
                         elif key == 'type':
                             comp['VDevType'] = roots[root][key]
                         elif key.startswith('children[') \
-                            or key.startswith('cache_'):
+                            or key.startswith('cache_') \
+                            or key.startswith('spare_'):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
@@ -271,9 +293,17 @@ class ZPool(CommandPlugin):
                         comp.get('title', '').replace('-', '_')
                         )
                     comp['id'] = self.prepId(id_str)
-                    log.debug('Found Root vDev: %s', comp['id'])
+                    if comp.get('is_cache'):
+                        modname = 'CacheDev'
+                    elif comp.get('is_log'):
+                        modname = 'LogDev'
+                    elif comp.get('is_spare'):
+                        modname = 'SpareDev'
+                    else:
+                        modname = 'RootVDev'
+                    log.debug('Found %s: %s', modname, comp['id'])
                     root_rm.append(ObjectMap(
-                        modname='ZenPacks.daviswr.ZFS.ZRootVDev',
+                        modname='ZenPacks.daviswr.ZFS.Z{}'.format(modname),
                         data=comp
                         ))
 
@@ -281,15 +311,20 @@ class ZPool(CommandPlugin):
                     if len(children) > 0:
                         log.debug('Root vDev %s has children', comp['id'])
                         child_rm = RelationshipMap(
-                            compname='zpools/pool_{0}/zrootVDevs/{1}'.format(pool, id_str),
+                            compname='zpools/pool_{0}/zrootVDevs/{1}'.format(
+                                pool,
+                                id_str
+                                ),
                             relname='zstoreDevs',
                             modname='ZenPacks.daviswr.ZFS.ZStoreDev'
                             )
                         for child in children:
                             comp = dict()
                             for key in child:
-                                if key in ['is_cache', 'is_log', 'whole_disk']:
-                                    comp[key] = True if ('1' == child[key]) else False
+                                if key in dev_booleans:
+                                    comp[key] = True \
+                                        if '1' == child[key] \
+                                        else False
                                 elif key in ints:
                                     comp[key] = int(child[key])
                                 elif key == 'type':
