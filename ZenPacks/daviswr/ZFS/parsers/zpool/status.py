@@ -56,16 +56,16 @@ class status(CommandParser):
         values = dict()
         for line in cmd.result.output.splitlines():
             if line.endswith('healthy'):
-                values['health'] = 0
+                values['health'] = health_map.get('ONLINE')
                 break
             else:
                 # Most of the time, the pool's probably going to be healthy
                 # so no need to check the regexes unless it isn't
-                pool_match = re.match(pool_regex, line)
-                device_match = re.match(device_regex, line)
+                match = re.match(pool_regex, line) \
+                    or re.match(device_regex, line)
 
-                if pool_match or device_match:
-                    health = pool_match.groups()[0]
+                if match:
+                    health = match.groups()[0]
                     values['health'] = health_map.get(health)
                     break
 
