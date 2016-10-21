@@ -4,7 +4,7 @@ ZenPack to model & monitor ZFS pools and datasets
 
 ## Requirements
 
-* Solaris or Illumos-based OS, or Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/)
+* An OS that supports ZFS (Solaris/Illumos, FreeBSD, Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/))
   * Only tested against Debian 7 with ZoL 0.6.5 so far...
 * An account on the ZFS-capable host, which can
   * Log in via SSH with a key
@@ -35,8 +35,8 @@ zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 * `zZPoolThresholdCritical`
   * Capacity percentage for critical threshold. Default 90.
 
-## Illumos notes
-Being a ZoL user, I don't have an Illumos system handy to develop against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
+## Illumos & FreeBSD notes
+Being a ZoL user, that's what I'm primarily developing against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
 
 That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
