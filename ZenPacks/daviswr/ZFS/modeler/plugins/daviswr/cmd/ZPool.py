@@ -214,6 +214,17 @@ class ZPool(CommandPlugin):
             'fragmentation',
             ]
 
+        # Basic Linux block device name
+        # sda1
+        disk_id_basic_regex = r'^([a-z]{3,})\d+$'
+        # Linux /dev/disk/by-id
+        # ata-WDC_WD2000F9YZ-09N20L0_WD-WCC1P0356812-part1
+        # Linux /dev/disk/by-path
+        # pci-0000:00:11.0-scsi-2:0:0:0-part1
+        # Illumos block device name
+        # c8t5000CCA03C41D2FDd0s0
+        disk_id_regex = r'^(.*)(?:-part\d+|s\d+)$'
+
         pool_rm = RelationshipMap(
             relname='zpools',
             modname='ZenPacks.daviswr.ZFS.ZPool'
@@ -288,6 +299,11 @@ class ZPool(CommandPlugin):
                         elif not key == 'name':
                             comp[key] = roots[root][key]
                     comp['pool'] = pool
+                    if comp.get('whole_disk') and comp.get('title'):
+                        match = re.match(disk_id_regex, comp['title']) \
+                            or re.match(disk_id_basic_regex, comp['title'])
+                        if match:
+                            comp['title'] = match.groups()[0]
                     id_str = '{0}_{1}'.format(
                         pool,
                         comp.get('title', '').replace('-', '_')
@@ -332,6 +348,11 @@ class ZPool(CommandPlugin):
                                 elif not key == 'name':
                                     comp[key] = child[key]
                             comp['pool'] = pool
+                            if comp.get('whole_disk') and comp.get('title'):
+                                match = re.match(disk_id_regex, comp['title']) \
+                                    or re.match(disk_id_basic_regex, comp['title'])
+                                if match:
+                                    comp['title'] = match.groups()[0]
                             id_str = '{0}_{1}'.format(
                                 pool,
                                 comp.get('title', '').replace('-', '_')
