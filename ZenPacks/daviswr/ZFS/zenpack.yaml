@@ -820,7 +820,7 @@ device_classes:
             dsnames:
               - zpool-status_health
             severity: 5
-            eventClass: /Storage
+            eventClass: /Status
             maxval: 0
 
         graphs:
@@ -911,7 +911,7 @@ device_classes:
             dsnames:
               - zpool-status_health
             severity: 5
-            eventClass: /Storage
+            eventClass: /Status
             maxval: 0
 
 
