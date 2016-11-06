@@ -51,6 +51,7 @@ class status(CommandParser):
             'OFFLINE': 3,
             'UNAVAIL': 4,
             'REMOVED': 5,
+            'SUSPENDED': 6,
         }
 
         values = dict()
@@ -66,7 +67,7 @@ class status(CommandParser):
 
                 if match:
                     health = match.groups()[0]
-                    values['health'] = health_map.get(health)
+                    values['health'] = health_map.get(health, 100)
                     break
 
         for point in cmd.points:
