@@ -1,10 +1,12 @@
 # Change Log
 
 ## [Unreleased]
+
+## [0.7.5] - 2017-01-19
 ### Added
  * Basic pool and vdev health check
    * Changes to `sudoers` config on monitored system(s) may be requried
- * (Should) model a pool's spare devices
+ * Model a pool's spare devices
 
 ### Changed
  * Cache, log, and spare devices are now their own component types rather than Root vDevs
@@ -46,7 +48,8 @@
  * Alpha release
 
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.4...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.5...HEAD
+[0.7.5]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/daviswr/ZenPacks.daviswr.ZFS/compare/0.7.1...0.7.2 
