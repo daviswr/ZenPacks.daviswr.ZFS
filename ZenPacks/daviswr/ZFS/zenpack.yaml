@@ -630,11 +630,12 @@ classes:
         short_label: Devices
         type: boolean
         default: true
-      exec:
-        label: Execution
-        short_label: Exec
-        type: boolean
-        default: true
+      # ZPL doesn't like this name
+      #exec:
+      #  label: Execution
+      #  short_label: Exec
+      #  type: boolean
+      #  default: true
       fscontext:
         label: SELinux Filesystem Context
         short_label: FS Context
