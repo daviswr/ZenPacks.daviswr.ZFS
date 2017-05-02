@@ -1,3 +1,5 @@
+# pylint: disable=C0301
+
 import re
 
 from Products.ZenRRD.CommandParser \

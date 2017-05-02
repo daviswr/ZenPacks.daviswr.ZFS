@@ -19,7 +19,9 @@ class ZFS(CommandPlugin):
     def process(self, device, results, log):
         log.info(
             "Modeler %s processing data for device %s",
-            self.name(), device.id)
+            self.name(),
+            device.id
+            )
         maps = list()
 
         pools = dict()
@@ -38,7 +40,7 @@ class ZFS(CommandPlugin):
                     pools[pool] = dict()
                 if ds not in pools[pool]:
                     pools[pool][ds] = dict()
-                if value.endswith('%') re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None

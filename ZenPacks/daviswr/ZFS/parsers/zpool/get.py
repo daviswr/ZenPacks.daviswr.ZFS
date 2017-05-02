@@ -25,7 +25,7 @@ class get(CommandParser):
                 value = get_match.group('value')
                 if pool not in pools:
                     pools[pool] = dict()
-                if value.endswith('%') re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None

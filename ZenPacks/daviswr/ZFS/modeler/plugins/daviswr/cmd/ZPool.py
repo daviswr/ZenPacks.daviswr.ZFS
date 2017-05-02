@@ -1,3 +1,5 @@
+# pylint: disable=C0301
+
 import re
 
 from Products.DataCollector.plugins.CollectorPlugin \
@@ -18,7 +20,9 @@ class ZPool(CommandPlugin):
     def process(self, device, results, log):
         log.info(
             "Modeler %s processing data for device %s",
-            self.name(), device.id)
+            self.name(),
+            device.id
+            )
         maps = list()
 
         pools = dict()
