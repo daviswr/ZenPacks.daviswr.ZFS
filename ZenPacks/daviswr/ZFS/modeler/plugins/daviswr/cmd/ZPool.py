@@ -174,8 +174,8 @@ class ZPool(CommandPlugin):
                     last_root = last_tree[key]
                     last_root['title'] = dev
                     for boolean in ['cache', 'log', 'spare']:
-                        last_root['is_{}'.format(boolean)] = '0'
-                    last_root['is_{}'.format(last_type)] = '1'
+                        last_root['is_{0}'.format(boolean)] = '0'
+                    last_root['is_{0}'.format(last_type)] = '1'
 
             elif status_child_match:
                 last_type = 'child'
@@ -261,7 +261,7 @@ class ZPool(CommandPlugin):
                         and not key == 'name':
                     comp[key] = pools[pool][key]
             # Can't use the GUID since it's not available in iostat
-            comp['id'] = self.prepId('pool_{}'.format(pool))
+            comp['id'] = self.prepId('pool_{0}'.format(pool))
             log.debug('Found ZPool: %s', comp['id'])
             pool_rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.ZFS.ZPool',
@@ -273,7 +273,7 @@ class ZPool(CommandPlugin):
             if roots is not None:
                 log.debug('ZPool %s has children', comp['id'])
                 root_rm = RelationshipMap(
-                    compname='zpools/pool_{}'.format(pool),
+                    compname='zpools/pool_{0}'.format(pool),
                     relname='zrootVDevs',
                     modname='ZenPacks.daviswr.ZFS.ZRootVDev'
                     )
@@ -321,7 +321,7 @@ class ZPool(CommandPlugin):
                         modname = 'RootVDev'
                     log.debug('Found %s: %s', modname, comp['id'])
                     root_rm.append(ObjectMap(
-                        modname='ZenPacks.daviswr.ZFS.Z{}'.format(modname),
+                        modname='ZenPacks.daviswr.ZFS.Z{0}'.format(modname),
                         data=comp
                         ))
 

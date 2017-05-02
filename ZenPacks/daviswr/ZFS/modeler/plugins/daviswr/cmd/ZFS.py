@@ -133,7 +133,7 @@ class ZFS(CommandPlugin):
                 continue
 
             rm = RelationshipMap(
-                compname='zpools/pool_{}'.format(pool),
+                compname='zpools/pool_{0}'.format(pool),
                 relname='zfsDatasets',
                 modname='ZenPacks.daviswr.ZFS.ZFSDataset'
                 )
@@ -179,7 +179,7 @@ class ZFS(CommandPlugin):
                 comp['id'] = self.prepId('{0}_{1}'.format(prefix, ds))
                 comp['title'] = ds
                 log.debug('Found ZFS %s: %s', comp.get('type', ''), comp['id'])
-                mod = 'ZenPacks.daviswr.ZFS.ZFS{}'.format(suffix)
+                mod = 'ZenPacks.daviswr.ZFS.ZFS{0}'.format(suffix)
                 rm.append(ObjectMap(
                     modname=mod,
                     data=comp
