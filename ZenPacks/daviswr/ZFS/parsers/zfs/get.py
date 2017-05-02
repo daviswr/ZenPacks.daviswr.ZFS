@@ -5,6 +5,7 @@ from Products.ZenRRD.CommandParser \
 from Products.ZenUtils.Utils \
     import prepId
 
+
 class get(CommandParser):
 
     def processResults(self, cmd, result):
@@ -21,8 +22,7 @@ class get(CommandParser):
             if get_match:
                 key = get_match.group('key')
                 value = get_match.group('value')
-                if value.endswith('%') \
-                    or re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif '-' == value:
                     value = None

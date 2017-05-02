@@ -5,6 +5,7 @@ from Products.DataCollector.plugins.CollectorPlugin \
 from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
+
 class ZPool(CommandPlugin):
     command = '/usr/bin/sudo /sbin/zpool get -pH all;' \
         '/usr/bin/sudo /sbin/zdb -L;' \
@@ -43,7 +44,7 @@ class ZPool(CommandPlugin):
             zdb_pool_match = re.match(r'^' + zdb_header_regex, line)
             zdb_tree_match = re.match(r'^    ' + zdb_header_regex, line)
             zdb_root_match = re.match(r'^        ' + zdb_header_regex, line)
-            zdb_vdev_match = re.match(r'^            ' + zdb_header_regex, line)
+            zdb_vdev_match = re.match(r'^            ' + zdb_header_regex, line)  # noqa
             zdb_kv_match = re.match(zdb_kv_regex, line)
             status_pool_match = re.match(status_pool_regex, line) \
                 or re.match(r'^\t' + status_dev_regex, line)
@@ -59,8 +60,7 @@ class ZPool(CommandPlugin):
                 value = get_match.group('value')
                 if pool not in pools:
                     pools[pool] = dict()
-                if value.endswith('%') \
-                    or re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') or re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None
@@ -100,7 +100,7 @@ class ZPool(CommandPlugin):
                 # Attributes right under vdev_tree are pool-wide
                 # and should already be in `zpool get` output
                 if 'vdev_tree' in last_pool \
-                    and last_pool['vdev_tree'] == last_parent:
+                        and last_pool['vdev_tree'] == last_parent:
                     continue
                 # ZenModeler does not like these in the RelMap
                 elif key in ['hostid', 'hostname']:
@@ -119,16 +119,15 @@ class ZPool(CommandPlugin):
                 if key == 'path':
                     last_parent['title'] = value.split('/')[-1]
                 # mirror type
-                elif key == 'id' \
-                    and 'type' in last_parent:
+                elif key == 'id' and 'type' in last_parent:
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
                         value
                         )
                 # raidz type
                 elif key == 'nparity' \
-                    and 'id' in last_parent \
-                    and 'type' in last_parent:
+                        and 'id' in last_parent \
+                        and 'type' in last_parent:
                     last_parent['type'] += value
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
@@ -239,8 +238,7 @@ class ZPool(CommandPlugin):
 
         # Pool components
         for pool in pools:
-            if ignore_names_regex \
-                and re.match(ignore_names_regex, pool):
+            if ignore_names_regex and re.match(ignore_names_regex, pool):
                 log.debug(
                     'Skipping pool %s due to zZPoolIgnoreNames',
                     pool
@@ -256,7 +254,7 @@ class ZPool(CommandPlugin):
                 elif key in floats:
                     comp[key] = float(pools[pool][key])
                 elif not key == 'vdev_tree' \
-                    and not key == 'name':
+                        and not key == 'name':
                     comp[key] = pools[pool][key]
             # Can't use the GUID since it's not available in iostat
             comp['id'] = self.prepId('pool_{}'.format(pool))
@@ -277,8 +275,8 @@ class ZPool(CommandPlugin):
                     )
                 for key in roots.keys():
                     if not key.startswith('children') \
-                        and not key.startswith('cache_') \
-                        and not key.startswith('spare_'):
+                            and not key.startswith('cache_') \
+                            and not key.startswith('spare_'):
                         del roots[key]
                 for root in roots:
                     comp = dict()
@@ -293,8 +291,8 @@ class ZPool(CommandPlugin):
                         elif key == 'type':
                             comp['VDevType'] = roots[root][key]
                         elif key.startswith('children[') \
-                            or key.startswith('cache_') \
-                            or key.startswith('spare_'):
+                                or key.startswith('cache_') \
+                                or key.startswith('spare_'):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
@@ -349,8 +347,14 @@ class ZPool(CommandPlugin):
                                     comp[key] = child[key]
                             comp['pool'] = pool
                             if comp.get('whole_disk') and comp.get('title'):
-                                match = re.match(disk_id_regex, comp['title']) \
-                                    or re.match(disk_id_basic_regex, comp['title'])
+                                match = re.match(
+                                    disk_id_regex,
+                                    comp['title']
+                                    ) \
+                                    or re.match(
+                                        disk_id_basic_regex,
+                                        comp['title']
+                                        )
                                 if match:
                                     comp['title'] = match.groups()[0]
                             id_str = '{0}_{1}'.format(

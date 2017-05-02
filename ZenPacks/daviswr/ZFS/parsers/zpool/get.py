@@ -5,6 +5,7 @@ from Products.ZenRRD.CommandParser \
 from Products.ZenUtils.Utils \
     import prepId
 
+
 class get(CommandParser):
 
     def processResults(self, cmd, result):
@@ -22,10 +23,9 @@ class get(CommandParser):
                 pool = get_match.group('pool')
                 key = get_match.group('key')
                 value = get_match.group('value')
-                if not pools.has_key(pool):
+                if pool not in pools:
                     pools[pool] = dict()
-                if value.endswith('%') \
-                    or re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None
@@ -46,7 +46,7 @@ class get(CommandParser):
 
         components = dict()
         for pool in pools:
-            comp_id = prepId('pool_{}'.format(pool))
+            comp_id = prepId('pool_{0}'.format(pool))
             if comp_id not in components:
                 components[comp_id] = dict()
             for measure in datapoints:

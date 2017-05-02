@@ -6,6 +6,7 @@ from Products.DataCollector.plugins.CollectorPlugin \
 from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
+
 class ZFS(CommandPlugin):
     command = '/usr/bin/sudo /sbin/zfs get -pH all'
 
@@ -37,8 +38,7 @@ class ZFS(CommandPlugin):
                     pools[pool] = dict()
                 if ds not in pools[pool]:
                     pools[pool][ds] = dict()
-                if value.endswith('%') \
-                    or re.match(r'^\d+\.\d{2}x$', value):
+                if value.endswith('%') re.match(r'^\d+\.\d{2}x$', value):
                     value = value[:-1]
                 elif value == '-':
                     value = None
@@ -126,8 +126,7 @@ class ZFS(CommandPlugin):
 
         # Dataset components
         for pool in pools:
-            if ignore_pools_regex \
-                and re.match(ignore_pools_regex, pool):
+            if ignore_pools_regex and re.match(ignore_pools_regex, pool):
                 log.debug('Skipping pool %s due to zZPoolIgnoreNames', pool)
                 continue
 
@@ -139,15 +138,14 @@ class ZFS(CommandPlugin):
 
             datasets = pools[pool]
             for ds in datasets:
-                if ignore_names_regex \
-                    and re.match(ignore_names_regex, ds):
+                if ignore_names_regex and re.match(ignore_names_regex, ds):
                     log.debug(
                         'Skipping dataset %s due to zZFSDatasetIgnoreNames',
                         ds
                         )
                     continue
                 elif ignore_types \
-                    and datasets[ds].get('zDsType', '') in ignore_types:
+                        and datasets[ds].get('zDsType', '') in ignore_types:
                     log.debug(
                         'Skipping dataset %s due to zZFSDatasetIgnoreTypes',
                         ds
@@ -158,7 +156,7 @@ class ZFS(CommandPlugin):
                 for key in datasets[ds]:
                     if key in booleans:
                         comp[key] = True \
-                            if ('on' == datasets[ds][key] \
+                            if ('on' == datasets[ds][key]
                                 or 'yes' == datasets[ds][key]) \
                             else False
                     elif key in floats:
