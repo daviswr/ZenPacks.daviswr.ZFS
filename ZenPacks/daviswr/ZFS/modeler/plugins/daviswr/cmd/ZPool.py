@@ -81,7 +81,7 @@ class ZPool(CommandPlugin):
 
             elif zdb_tree_match:
                 key = zdb_tree_match.group('key')
-                if key.find('tree') > -1:
+                if 'tree' in key:
                     last_pool[key] = dict()
                     last_tree = last_pool[key]
                     last_parent = last_tree
