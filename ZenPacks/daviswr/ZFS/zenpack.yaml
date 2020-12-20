@@ -785,7 +785,7 @@ device_classes:
               op-write: GAUGE
           zpool-status:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool status -x ${here/title}"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool status -v ${here/title} | grep state"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -901,7 +901,7 @@ device_classes:
             component: "${here/id}"
           zpool-status:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool status -x ${here/pool} | /bin/grep -e healthy -e ${here/title}"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool status -v ${here/pool} | /bin/grep ${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE

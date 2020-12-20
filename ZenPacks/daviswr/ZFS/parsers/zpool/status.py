@@ -11,14 +11,7 @@ from Products.ZenUtils.Utils \
 class status(CommandParser):
 
     def processResults(self, cmd, result):
-        # pep8's multiline string handling is awful
         """
-        Example healthy output:
-        all pools are healthy
-
-        Alt. example healthy output:
-        pool 'pool1' is healthy
-
         Example unhealthy output:
           pool: zpool3
          state: DEGRADED
@@ -60,19 +53,12 @@ class status(CommandParser):
 
         values = dict()
         for line in cmd.result.output.splitlines():
-            if line.endswith('healthy'):
-                values['health'] = health_map.get('ONLINE')
-                break
-            else:
-                # Most of the time, the pool's probably going to be healthy
-                # so no need to check the regexes unless it isn't
-                match = re.match(pool_regex, line) \
-                    or re.match(device_regex, line)
+            match = re.match(pool_regex, line) or re.match(device_regex, line)
 
-                if match:
-                    health = match.groups()[0]
-                    values['health'] = health_map.get(health, 100)
-                    break
+            if match:
+                health = match.groups()[0]
+                values['health'] = health_map.get(health, 100)
+                break
 
         for point in cmd.points:
             if point.id in values:
