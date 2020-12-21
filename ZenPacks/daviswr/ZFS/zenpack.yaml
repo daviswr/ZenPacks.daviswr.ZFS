@@ -33,7 +33,7 @@ classes:
         datapoint: zpool-get_allocated
         grid_display: true
         details_display: true
-        order: 2
+        order: 3
       altroot:
         label: Alternate Root
         short_label: Alt Root
@@ -47,14 +47,14 @@ classes:
         type: boolean
         default: false
         details_display: true
-        order: 8
+        order: 9
       autoreplace:
         label: Automatic Device Replacement
         short_label: Auto-Replace
         type: boolean
         default: false
         details_display: true
-        order: 10
+        order: 11
       bootfs:
         label: Bootable Dataset
         short_label: Boot FS
@@ -64,7 +64,7 @@ classes:
         short_label: Cache
         type: string
         details_display: true
-        order: 9
+        order: 10
       capacity:
         label: Percent Used
         short_label: "Capacity %"
@@ -75,7 +75,7 @@ classes:
         details_display: true
         content_width: 50
         label_width: 50
-        order: 4
+        order: 5
       comment:
         label: Comment
         type: string
@@ -90,7 +90,7 @@ classes:
         type: float
         datapoint: zpool-get_dedupratio
         details_display: true
-        order: 6
+        order: 7
       delegation:
         label: Delegation
         type: boolean
@@ -118,7 +118,7 @@ classes:
         details_display: true
         content_width: 30
         label_width: 30
-        order: 5
+        order: 6
       free:
         label: Free Space
         short_label: Free
@@ -127,7 +127,7 @@ classes:
         datapoint: zpool-get_free
         grid_display: true
         details_display: true
-        order: 3
+        order: 4
       freeing:
         label: Reclaimable Space
         short_label: Reclaim
@@ -137,9 +137,11 @@ classes:
         label: GUID
         type: string
       health:
-        # Not updated dynamically outside modeling
-        label: Health
+        label: State
         type: string
+        grid_display: true
+        details_display: true
+        order: 1
       #leaked:
       #  label: Leaked
       #  type: int
@@ -155,7 +157,7 @@ classes:
         details_display: true
         label_width: 25
         content_width: 25
-        order: 11
+        order: 12
       size:
         label: Total Space
         short_label: Space
@@ -163,7 +165,7 @@ classes:
         renderer: Zenoss.render.bytesString
         grid_display: true
         details_display: true
-        order: 1
+        order: 2
       state:
         type: int
       version:
@@ -171,7 +173,7 @@ classes:
         short_label: Ver
         type: string
         details_display: true
-        order: 12
+        order: 13
 
   ZVDev:
     label: ZFS Virtual Device
@@ -189,6 +191,12 @@ classes:
         order: 11
       ashift:
         type: int
+      # Wasn't grid-displaying correctly until overrode in each child class
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
       guid:
         label: GUID
       id:
@@ -226,6 +234,11 @@ classes:
         grid_display: true
         details_display: true
         order: 9
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
 
   ZCacheDev:
     base: [ZRootVDev]
@@ -236,6 +249,11 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
 
   ZLogDev:
     base: [ZRootVDev]
@@ -246,6 +264,11 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
 
   ZSpareDev:
     base: [ZRootVDev]
@@ -256,6 +279,11 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
 
   ZStoreDev:
     base: [ZVDev]
@@ -266,6 +294,11 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      health:
+        label: State
+        grid_display: true
+        details_display: true
+        order: 1
 
   ZFSDataset:
     label: ZFS Dataset
@@ -797,7 +830,7 @@ device_classes:
             dsnames:
               - zpool-get_capacity
             severity: 3
-            eventClass: /Storage
+            eventClass: /Status/ZFS
             maxval: here.zZPoolThresholdWarning
           Capacity-Error:
             type: MinMaxThreshold
@@ -805,7 +838,7 @@ device_classes:
             dsnames:
               - zpool-get_capacity
             severity: 4
-            eventClass: /Storage
+            eventClass: /Status/ZFS
             maxval: here.zZPoolThresholdError
           Capacity-Critical:
             type: MinMaxThreshold
@@ -813,16 +846,17 @@ device_classes:
             dsnames:
               - zpool-get_capacity
             severity: 5
-            eventClass: /Storage
+            eventClass: /Status/ZFS
             maxval: here.zZPoolThresholdCritical
           Health:
             type: MinMaxThreshold
             enabled: true
             dsnames:
               - zpool-status_health
-            severity: 5
-            eventClass: /Status
-            maxval: 0
+            severity: 4
+            eventClass: /Status/ZFS
+            minval: 1
+            maxval: 2
 
         graphs:
           DEFAULTS:
@@ -922,9 +956,10 @@ device_classes:
             enabled: true
             dsnames:
               - zpool-status_health
-            severity: 5
-            eventClass: /Status
-            maxval: 0
+            severity: 4
+            eventClass: /Status/ZFS
+            minval: 1
+            maxval: 2
 
         graphs:
           DEFAULTS:
@@ -1025,3 +1060,86 @@ device_classes:
                 lineType: LINE
                 lineWidth: 1
                 colorindex: 1
+
+
+event_classes:
+  /Status/ZFS:
+    remove: true
+    description: ZFS events
+    transform: |-
+      from zenoss.protocols.protobufs.zep_pb2 import (
+          SEVERITY_CLEAR,
+          SEVERITY_INFO,
+          SEVERITY_WARNING,
+          SEVERITY_ERROR,
+          SEVERITY_CRITICAL
+          )
+
+      if evt.eventKey == 'zpool-status|zpool-status_health|Health':
+          current = int(float(evt.current))
+
+          # Match values in the zool.iostat.status parser
+          health_map = {
+              1: 'ONLINE',
+              2: 'AVAIL',
+              3: 'INUSE',
+              4: 'DEGRADED',
+              5: 'FAULTED',
+              6: 'OFFLINE',
+              7: 'UNAVAIL',
+              8: 'REMOVED',
+              9: 'SUSPENDED',
+              }
+
+          health = health_map.get(current, 'UNKNOWN')
+          if component and component.id and component.title:
+              if component.id.startswith('pool_'):
+                  comp_name = 'Pool {0}'.format(component.title)
+              elif (hasattr(component, 'pool')
+                      and (component.title.startswith('mirror')
+                           or component.title.startswith('raid'))):
+                  comp_name = '{0} {1}'.format(component.pool, component.title)
+              else:
+                  comp_name = component.title
+          else:
+              comp_name = 'State'
+          evt.summary = '{0} is {1}'.format(comp_name, health)
+
+          # https://docs.oracle.com/cd/E19253-01/819-5461/gamno/index.html
+          # https://docs.oracle.com/cd/E19253-01/819-5461/gcvcw/index.html
+          severities = {
+              # The device or virtual device is in normal working order
+              'ONLINE': SEVERITY_CLEAR,
+              # Available hot spare
+              'AVAIL': SEVERITY_CLEAR,
+              # Hot spare that is currently in use
+              'INUSE': SEVERITY_INFO,
+              # The virtual device has experienced a failure but can still function
+              'DEGRADED': SEVERITY_ERROR,
+              # The device or virtual device is completely inaccessible
+              'FAULTED': SEVERITY_CRITICAL,
+              # The device has been explicitly taken offline by the administrator
+              'OFFLINE': SEVERITY_ERROR,
+              # The device or virtual device cannot be opened
+              'UNAVAIL': SEVERITY_CRITICAL,
+              # The device was physically removed while the system was running
+              'REMOVED': SEVERITY_CRITICAL,
+              'SUSPENDED': SEVERITY_CRITICAL,
+              }
+
+          evt.severity = severities.get(health, SEVERITY_ERROR)
+          evt.eventClass = '/Status'
+
+          if component:
+              if hasattr(component, 'health'):
+                  @transact
+                  def updateDb():
+                      component.health = health
+                  updateDb()
+
+      elif evt.eventKey.startswith('zpool-get|zpool-get_capacity'):
+          current = int(float(evt.current))
+          pool_name = component.title if component and component.title \
+              else evt.component
+          evt.summary = 'Pool {0} {1}% allocated'.format(pool_name, current)
+          evt.eventClass = '/Storage'

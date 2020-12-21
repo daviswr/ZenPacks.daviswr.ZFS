@@ -2,10 +2,8 @@
 
 import re
 
-from Products.ZenRRD.CommandParser \
-    import CommandParser
-from Products.ZenUtils.Utils \
-    import prepId
+from Products.ZenRRD.CommandParser import CommandParser
+from Products.ZenUtils.Utils import prepId
 
 
 class status(CommandParser):
@@ -41,22 +39,23 @@ class status(CommandParser):
         # Convert pool state to number for monitoring template
         # An event transform will have to make this human-readable again
         health_map = {
-            'ONLINE': 0,
-            'AVAIL': 0,
-            'DEGRADED': 1,
-            'FAULTED': 2,
-            'OFFLINE': 3,
-            'UNAVAIL': 4,
-            'REMOVED': 5,
-            'SUSPENDED': 6,
-        }
+            'ONLINE': 1,
+            'AVAIL': 2,  # Spare
+            'INUSE': 3,  # Spare
+            'DEGRADED': 4,
+            'FAULTED': 5,
+            'OFFLINE': 6,
+            'UNAVAIL': 7,
+            'REMOVED': 8,
+            'SUSPENDED': 9,
+            }
 
         values = dict()
         for line in cmd.result.output.splitlines():
             match = re.match(pool_regex, line) or re.match(device_regex, line)
 
             if match:
-                health = match.groups()[0]
+                health = match.groups()[0].upper()
                 values['health'] = health_map.get(health, 100)
                 break
 

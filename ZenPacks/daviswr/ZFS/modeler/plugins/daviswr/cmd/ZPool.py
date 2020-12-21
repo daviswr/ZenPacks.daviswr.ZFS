@@ -2,20 +2,25 @@
 
 import re
 
-from Products.DataCollector.plugins.CollectorPlugin \
-    import CommandPlugin
-from Products.DataCollector.plugins.DataMaps \
-    import MultiArgs, RelationshipMap, ObjectMap
+from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+from Products.DataCollector.plugins.DataMaps import (
+    MultiArgs,
+    RelationshipMap,
+    ObjectMap
+    )
 
 
 class ZPool(CommandPlugin):
-    command = '/usr/bin/sudo /sbin/zpool get -pH all;' \
-        '/usr/bin/sudo /sbin/zdb -L;' \
-        '/usr/bin/sudo /sbin/zpool status -v'
-
     deviceProperties = CommandPlugin.deviceProperties + (
         'zZPoolIgnoreNames',
         )
+
+    commands = [
+        '/usr/bin/sudo /sbin/zpool get -pH all',
+        '/usr/bin/sudo /sbin/zdb -L',
+        '/usr/bin/sudo /sbin/zpool status -v'
+        ]
+    command = ';'.join(commands)
 
     def process(self, device, results, log):
         log.info(
@@ -41,7 +46,7 @@ class ZPool(CommandPlugin):
         status_logs_regex = r'^\s+logs$'
         status_cache_regex = r'^\s+cache$'
         status_spare_regex = r'^\s+spares$'
-        status_dev_regex = r'(?P<dev>\S+)\s+\S+(?:\s+\d+){3}$'
+        status_dev_regex = r'(?P<dev>\S+)\s+(?P<state>\S+)(?:\s+\d+){3}$'
 
         for line in results.splitlines():
             get_match = re.match(get_regex, line)
@@ -103,8 +108,8 @@ class ZPool(CommandPlugin):
                 value = zdb_kv_match.group('value').replace("'", "")
                 # Attributes right under vdev_tree are pool-wide
                 # and should already be in `zpool get` output
-                if 'vdev_tree' in last_pool \
-                        and last_pool['vdev_tree'] == last_parent:
+                if ('vdev_tree' in last_pool
+                        and last_pool['vdev_tree'] == last_parent):
                     continue
                 # ZenModeler does not like these in the RelMap
                 elif key in ['hostid', 'hostname']:
@@ -129,9 +134,9 @@ class ZPool(CommandPlugin):
                         value
                         )
                 # raidz type
-                elif key == 'nparity' \
-                        and 'id' in last_parent \
-                        and 'type' in last_parent:
+                elif (key == 'nparity'
+                        and 'id' in last_parent
+                        and 'type' in last_parent):
                     last_parent['type'] += value
                     last_parent['title'] = '{0}-{1}'.format(
                         last_parent['type'],
@@ -166,7 +171,7 @@ class ZPool(CommandPlugin):
             # Each device is a root vdev,
             # rather than a child vdev in a logs/cache root
             elif status_root_match:
-                if 'cache' == last_type or 'spare' == last_type:
+                if last_type in ['cache', 'spare']:
                     dev = status_root_match.group('dev')
                     key = '{0}_{1}'.format(last_type, dev)
                     if key not in last_tree:
@@ -257,8 +262,8 @@ class ZPool(CommandPlugin):
                     comp[key] = int(pools[pool][key])
                 elif key in floats:
                     comp[key] = float(pools[pool][key])
-                elif not key == 'vdev_tree' \
-                        and not key == 'name':
+                elif (not key == 'vdev_tree'
+                        and not key == 'name'):
                     comp[key] = pools[pool][key]
             # Can't use the GUID since it's not available in iostat
             comp['id'] = self.prepId('pool_{0}'.format(pool))
@@ -278,9 +283,9 @@ class ZPool(CommandPlugin):
                     modname='ZenPacks.daviswr.ZFS.ZRootVDev'
                     )
                 for key in roots.keys():
-                    if not key.startswith('children') \
-                            and not key.startswith('cache_') \
-                            and not key.startswith('spare_'):
+                    if (not key.startswith('children')
+                            and not key.startswith('cache_')
+                            and not key.startswith('spare_')):
                         del roots[key]
                 for root in roots:
                     comp = dict()
@@ -294,9 +299,9 @@ class ZPool(CommandPlugin):
                             comp[key] = int(roots[root][key])
                         elif key == 'type':
                             comp['VDevType'] = roots[root][key]
-                        elif key.startswith('children[') \
-                                or key.startswith('cache_') \
-                                or key.startswith('spare_'):
+                        elif (key.startswith('children[')
+                                or key.startswith('cache_')
+                                or key.startswith('spare_')):
                             children.append(roots[root][key])
                         elif not key == 'name':
                             comp[key] = roots[root][key]
@@ -319,6 +324,9 @@ class ZPool(CommandPlugin):
                         modname = 'SpareDev'
                     else:
                         modname = 'RootVDev'
+                    # Starting value for health attribute until polled
+                    if 'health' not in comp:
+                        comp['health'] = 'TBD'
                     log.debug('Found %s: %s', modname, comp['id'])
                     root_rm.append(ObjectMap(
                         modname='ZenPacks.daviswr.ZFS.Z{0}'.format(modname),
@@ -366,6 +374,9 @@ class ZPool(CommandPlugin):
                                 comp.get('title', '').replace('-', '_')
                                 )
                             comp['id'] = self.prepId(id_str)
+                            # Starting value for health attribute until polled
+                            if 'health' not in comp:
+                                comp['health'] = 'TBD'
                             log.debug('Found child vDev: %s', comp['id'])
                             child_rm.append(ObjectMap(
                                 modname='ZenPacks.daviswr.ZFS.ZStoreDev',
