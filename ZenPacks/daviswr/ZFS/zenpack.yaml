@@ -137,7 +137,7 @@ classes:
         label: GUID
         type: string
       health:
-        # Can't be updated dynamically outside modeling
+        # Not updated dynamically outside modeling
         label: Health
         type: string
       #leaked:
@@ -548,7 +548,7 @@ classes:
       userrefs:
         label: User Holds
         type: int
-      
+
   ZFSVol:
     base: [ZFSDataset]
     label: ZFS Volume
@@ -750,7 +750,7 @@ zProperties:
   zZPoolThresholdCritical:
     type: int
     default: 90
-  
+
 
 device_classes:
   /:
@@ -776,7 +776,7 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y 1 1"
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y -v 1 1"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -894,6 +894,7 @@ device_classes:
 
 
       ZFSVirtualDevice:
+        targetPythonClass: ZenPacks.daviswr.ZFS.ZVDev
         datasources:
           DEFAULTS:
             type: COMMAND
@@ -905,6 +906,16 @@ device_classes:
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
+          zpool-iostat:
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y -v 1 1"
+            parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
+            datapoints:
+              bw-read: GAUGE
+              bw-write: GAUGE
+              op-read: GAUGE
+              op-write: GAUGE
+
         thresholds:
           Health:
             type: MinMaxThreshold
@@ -914,6 +925,37 @@ device_classes:
             severity: 5
             eventClass: /Status
             maxval: 0
+
+        graphs:
+          DEFAULTS:
+            miny: 0
+          Activity:
+            units: IOPS
+            graphpoints:
+              Writes:
+                dpName: zpool-iostat_op-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Reads:
+                dpName: zpool-iostat_op-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
+          Throughput:
+            units: bytes/sec
+            base: true
+            graphpoints:
+              Written:
+                dpName: zpool-iostat_bw-write
+                lineType: AREA
+                stacked: true
+                colorindex: 0
+              Read:
+                dpName: zpool-iostat_bw-read
+                lineType: LINE
+                lineWidth: 1
+                colorindex: 1
 
 
       ZFSDataset:

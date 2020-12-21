@@ -9,12 +9,24 @@ from Products.ZenUtils.Utils \
 
 
 class iostat(CommandParser):
+
     def processResults(self, cmd, result):
         """
-        Example output
-        pool1       5.58T  1.67T  1.26K      0   160M      0
+        Example output:
+                                                         capacity     operations    bandwidth  # noqa
+        pool                                          alloc   free   read  write   read  write  # noqa
+        --------------------------------------------  -----  -----  -----  -----  -----  -----  # noqa
+        pool0                                         11.9T  2.63T      0    165      0   632K  # noqa
+          raidz2                                      11.9T  2.63T      0    165      0   632K  # noqa
+            ata-WDC_WD40EFRX-68N32N0_WD-WCC7K3HVNHY9      -      -      0     59      0   508K  # noqa
+            ata-WDC_WD40EFRX-68N32N0_WD-WCC7K3KCRH5F      -      -      0     48      0   512K  # noqa
+            ata-WDC_WD40EFRX-68N32N0_WD-WCC7K7PHLJ15      -      -      0     46      0   524K  # noqa
+            ata-WDC_WD40EFRX-68N32N0_WD-WCC7K7ZD5X63      -      -      0     53      0   512K  # noqa
+        pool1                                         5.58T  1.67T  1.26K      0   160M      0  # noqa
+          raidz2                                      5.58T  1.67T  1.26K      0   160M      0  # noqa
+        ...
         """
-        iostat_regex = r'^(?P<pool>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+\.?\d?\d?)(?P<op_read_unit>\w)?\s+(?P<op_write>\d+\.?\d?\d?)(?P<op_write_unit>\w)?\s+(?P<bw_read>\d+\.?\d?\d?)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\d+\.?\d?\d?)(?P<bw_write_unit>\w)?$'  # noqa
+        iostat_regex = r'^\s*(?P<device>\S+)\s+\S+\s+\S+\s+(?P<op_read>\d+\.?\d?\d?)(?P<op_read_unit>\w)?\s+(?P<op_write>\d+\.?\d?\d?)(?P<op_write_unit>\w)?\s+(?P<bw_read>\d+\.?\d?\d?)(?P<bw_read_unit>\w)?\s+(?P<bw_write>\d+\.?\d?\d?)(?P<bw_write_unit>\w)?$'  # noqa
 
         multi = {
             'K': 1024,
@@ -34,27 +46,43 @@ class iostat(CommandParser):
             'bw_write',
             ]
 
-        pools = dict()
+        components = dict()
+        offsets = dict()
+        last_pool = ''
+
         for line in cmd.result.output.splitlines():
             match = re.match(iostat_regex, line)
             if match:
+                device = match.group('device')
+                # Line indented, this is a device, not a pool
+                if line.startswith(' '):
+                    if (device.startswith('raid')
+                            or device.startswith('mirror')):
+                        if device not in offsets:
+                            offsets[device] = 0
+                        device_name = '{0}-{1}'.format(device, offsets[device])
+                        offsets[device] += 1
+                    else:
+                        device_name = device
+                    comp_id = prepId('{0}_{1}'.format(
+                        last_pool,
+                        device_name.replace('-', '_')
+                        ))
+                # Line has no indent, this is a pool
+                else:
+                    last_pool = device
+                    comp_id = prepId('pool_{0}'.format(device))
+                    for offset in offsets:
+                        offsets[offset] = 0
+
                 stats = dict()
                 for measure in measures:
                     value = float(match.group(measure))
                     unit = match.group('{0}_unit'.format(measure))
                     name = measure.replace('_', '-')
-                    stats[name] = value * multi.get(unit, 1)
-                pool = match.group('pool')
-                pools[pool] = stats
+                    stats[name] = int(value * multi.get(unit, 1))
 
-        components = dict()
-        for pool in pools:
-            comp_id = prepId('pool_{0}'.format(pool))
-            if comp_id not in components:
-                components[comp_id] = dict()
-            for measure in pools[pool]:
-                value = pools[pool].get(measure)
-                components[comp_id][measure] = value
+                components[comp_id] = stats
 
         for point in cmd.points:
             if point.component in components:

@@ -5,16 +5,17 @@ ZenPack to model & monitor ZFS pools and datasets
 ## Requirements
 
 * An OS that supports ZFS (Solaris/Illumos, FreeBSD, Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/))
-  * Only tested against Debian 7 with ZoL 0.6.5 so far...
+  * Only tested against Debian with OpenZFS 0.6.5 so far...
 * An account on the ZFS-capable host, which can
   * Log in via SSH with a key
   * Run the `zdb`, `zpool`, and `zfs` commands with certain parameters without password via `sudo`
+* [ZenPackLib](https://help.zenoss.com/in/zenpack-catalog/open-source/zenpacklib)
 
 Example entries in `/etc/sudoers`
 
 ```
 Cmnd_Alias ZDB = /sbin/zdb -L
-Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y 1 1, /sbin/zpool status -v, /sbin/zpool status -x *
+Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y *, /sbin/zpool status -v, /sbin/zpool status -v *, /sbin/zpool status -x *
 Cmnd_Alias ZFS = /sbin/zfs get -pH all, /sbin/zfs get -pH all *
 zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 ```
@@ -36,7 +37,7 @@ zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
   * Capacity percentage for critical threshold. Default 90.
 
 ## Illumos & FreeBSD notes
-Being a ZoL user, that's what I'm primarily developing against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
+Being an OpenZFS/ZoL user, that's what I'm primarily developing against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
 
 That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
@@ -49,3 +50,10 @@ I've found that reducing `zSshConcurrentSessions` on the device or class from 10
 
 ### ZPool I/O stats
 The `zpool-iostat` datasource **will** miss data since it's only noting what's happened in the last second when it polls. While an actual counter would be nice, that's the only source of pool activity information I can find. Any suggestions would be appreciated.
+
+## Special Thanks
+* [RageLtMan](https://github.com/sempervictus) - without his testing, feedback, and input this ZenPack would be a mere fraction of what it's become
+* [JRansomed](https://github.com/JRansomed)
+* [Crosse](https://github.com/Crosse)
+* [BaileyTJ](https://github.com/baileytj3)
+* [RipleyMJ](https://github.com/ripleymj)
