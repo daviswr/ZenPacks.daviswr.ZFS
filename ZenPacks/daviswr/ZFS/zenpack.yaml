@@ -404,6 +404,12 @@ classes:
         default: off
         details_display: true
         order: 27
+      encryption:
+        label: Encryption
+        short_label: Crypto
+        type: string
+        default: unsupported
+        details_display: true
       filesystem_count:
         label: Child Datasets
         short_label: Children
@@ -412,6 +418,12 @@ classes:
         label: Maximum Filesystems
         short_label: Max FS
         type: int
+      keysource:
+        label: Key Source
+        short_label: Key
+        type: string
+        default: unsupported
+        details_display: true
       logbias:
         label: Log Bias
         type: string
@@ -487,6 +499,12 @@ classes:
         default: 0
         details_display: true
         order: 22
+      rekeydate:
+        label: Re-key Date
+        short_label: Re-keyed
+        type: string
+        default: unsupported
+        details_display: true
       relatime:
         label: Relative Access Time
         short_label: relatime

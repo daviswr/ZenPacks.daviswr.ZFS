@@ -186,6 +186,11 @@ class ZFS(CommandPlugin):
                             time_format,
                             time.localtime(int(datasets[ds][key]))
                             )
+                    elif 'encryption' == key and 'on' == datasets[ds][key]:
+                        # https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html  # noqa
+                        # The default encryption algorithm is aes-128-ccm when
+                        # a file system's encryption value is on.
+                        comp[key] = 'aes-128-ccm'
                     else:
                         comp[key] = datasets[ds][key]
                 prefix = prefixes.get(comp.get('zDsType'), '')
