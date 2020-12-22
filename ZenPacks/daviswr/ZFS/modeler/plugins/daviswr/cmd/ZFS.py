@@ -1,20 +1,36 @@
 import re
 import time
 
-from Products.DataCollector.plugins.CollectorPlugin \
-    import CommandPlugin
-from Products.DataCollector.plugins.DataMaps \
-    import MultiArgs, RelationshipMap, ObjectMap
+from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+from Products.DataCollector.plugins.DataMaps import (
+    MultiArgs,
+    RelationshipMap,
+    ObjectMap
+    )
 
 
 class ZFS(CommandPlugin):
-    command = '/usr/bin/sudo /sbin/zfs get -pH all'
-
-    deviceProperties = CommandPlugin.deviceProperties + (
+    requiredProperties = (
         'zZFSDatasetIgnoreNames',
         'zZFSDatasetIgnoreTypes',
         'zZPoolIgnoreNames',
+        # May not be needed due to TALES monkeypatch
+        'zZFSExecPrefix',
+        'zZFSBinaryPath',
         )
+
+    deviceProperties = CommandPlugin.deviceProperties + requiredProperties
+
+    # Note that we're using TALES in the command. Normally that's not
+    # possible. Check out the monkeypatch of CollectorClient.getCommands
+    # in this ZenPack's __init__.py to see what makes it possible.
+    commands = [
+        # Prevent a blank zZFSExecPrefix from causing Zenoss to put
+        # $ZENHOME/libexec at the beginning of the command
+        '/bin/echo > /dev/null',
+        '${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all',
+        ]
+    command = ';'.join(commands)
 
     def process(self, device, results, log):
         log.info(
@@ -146,8 +162,8 @@ class ZFS(CommandPlugin):
                         ds
                         )
                     continue
-                elif ignore_types \
-                        and datasets[ds].get('zDsType', '') in ignore_types:
+                elif (ignore_types
+                        and datasets[ds].get('zDsType', '') in ignore_types):
                     log.debug(
                         'Skipping dataset %s due to zZFSDatasetIgnoreTypes',
                         ds

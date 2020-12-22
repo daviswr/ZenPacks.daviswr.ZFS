@@ -1,4 +1,4 @@
-# pylint: disable=C0301
+# pylint: disable=line-too-long
 
 import re
 
@@ -11,14 +11,26 @@ from Products.DataCollector.plugins.DataMaps import (
 
 
 class ZPool(CommandPlugin):
-    deviceProperties = CommandPlugin.deviceProperties + (
+    requiredProperties = (
         'zZPoolIgnoreNames',
+        # May not be needed due to TALES monkeypatch
+        'zZFSExecPrefix',
+        'zZPoolBinaryPath',
+        'zZdbBinaryPath',
         )
 
+    deviceProperties = CommandPlugin.deviceProperties + requiredProperties
+
+    # Note that we're using TALES in the command. Normally that's not
+    # possible. Check out the monkeypatch of CollectorClient.getCommands
+    # in this ZenPack's __init__.py to see what makes it possible.
     commands = [
-        '/usr/bin/sudo /sbin/zpool get -pH all',
-        '/usr/bin/sudo /sbin/zdb -L',
-        '/usr/bin/sudo /sbin/zpool status -v'
+        # Prevent a blank zZFSExecPrefix from causing Zenoss to put
+        # $ZENHOME/libexec at the beginning of the command
+        '/bin/echo > /dev/null',
+        '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all',
+        '${here/zZFSExecPrefix} ${here/zZdbBinaryPath} -L',
+        '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v',
         ]
     command = ';'.join(commands)
 

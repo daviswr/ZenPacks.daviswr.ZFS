@@ -813,7 +813,18 @@ zProperties:
   zZPoolThresholdCritical:
     type: int
     default: 90
-
+  zZFSExecPrefix:
+    type: string
+    default: /usr/bin/sudo
+  zZFSBinaryPath:
+    type: string
+    default: /sbin/zfs
+  zZPoolBinaryPath:
+    type: string
+    default: /sbin/zpool
+  zZdbBinaryPath:
+    type: string
+    default: /sbin/zdb
 
 device_classes:
   /:
@@ -829,7 +840,7 @@ device_classes:
             component: "${here/id}"
           zpool-get:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool get -pH all"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.get
             datapoints:
               allocated: GAUGE
@@ -839,7 +850,7 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y -v 1 1"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -848,7 +859,7 @@ device_classes:
               op-write: GAUGE
           zpool-status:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool status -v ${here/title} | grep -e ${here/title} -e scrub -e scan"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/title} | grep -e ${here/title} -e scrub -e scan"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -995,7 +1006,7 @@ device_classes:
             component: "${here/id}"
           zpool-iostat:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zpool iostat -y -v 1 1"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -1005,7 +1016,7 @@ device_classes:
           zpool-status:
             usessh: true
             # This may not catch log devices. Further testing required
-            commandTemplate: "/usr/bin/sudo /sbin/zpool status -v ${here/pool} | grep ${here/title}"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/pool} | grep ${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1081,7 +1092,7 @@ device_classes:
             component: "${here/id}"
           zfs-get:
             usessh: true
-            commandTemplate: "/usr/bin/sudo /sbin/zfs get -pH all ${here/title}"
+            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all ${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             datapoints:
               available: GAUGE

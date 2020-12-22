@@ -35,11 +35,21 @@ zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
   * Capacity percentage for error threshold. Default 85.
 * `zZPoolThresholdCritical`
   * Capacity percentage for critical threshold. Default 90.
+* `zZFSExecPrefix`
+  * Prefix for zpool/zfs/zdb commands. Defaults to /usr/bin/sudo
+* `zZFSBinaryPath`
+  * Path to the zfs command. Defaults to /sbin/zfs
+* `zZPoolBinaryPath`
+  * Path to the zpool command. Defaults to /sbin/zpool
+* `zZdbBinaryPath`
+  * Path to the zdb command. Defaults to /sbin/zdb
 
 ## Illumos & FreeBSD notes
 Being an OpenZFS/ZoL user, that's what I'm primarily developing against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
 
 That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
+
+The `zZFSExecPrefix`, `zZFSBinaryPath`, `zZPoolBinaryPath`, and `zZdbBinaryPath` zProperties could be customized to work on a non-Linux system.
 
 ## Usage
 ### Modelers
