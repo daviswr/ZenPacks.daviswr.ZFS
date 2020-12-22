@@ -33,11 +33,10 @@ class status(CommandParser):
 
         errors: No known data errors
         """
-        pool_regex = r'^ state: (\w+)\s*?$'
-        device_regex = r'^\s+\S+\s+(\S+)\s+.*'
+        device_regex = r'(?P<dev>\S+)\s+(?P<health>\S+)\s+(?P<read>\d+)\s+(?P<write>\d+)\s+(?P<cksum>\d+)'  # noqa
 
         # Convert pool state to number for monitoring template
-        # An event transform will have to make this human-readable again
+        # An event transform will make this human-readable again
         health_map = {
             'ONLINE': 1,
             'AVAIL': 2,  # Spare
@@ -50,13 +49,41 @@ class status(CommandParser):
             'SUSPENDED': 9,
             }
 
+        measures = [
+            'read',
+            'write',
+            'cksum'
+            ]
+
+        scrub_map = {
+            'complete': 1,
+            'scrub': 2,
+            'resilver': 3,
+            }
+
         values = dict()
         for line in cmd.result.output.splitlines():
-            match = re.match(pool_regex, line) or re.match(device_regex, line)
+            match = re.search(device_regex, line)
 
-            if match:
-                health = match.groups()[0].upper()
+            if not match and ('scan:' in line or 'scrub:' in line):
+                line = line.replace('scrub:', '')
+                if ('completed' in line
+                        or 'repaired' in line
+                        or 'resilvered' in line):
+                    values['scrub'] = scrub_map.get('complete', 100)
+                elif 'scrub' in line:
+                    values['scrub'] = scrub_map.get('scrub', 100)
+                elif 'resilver' in line:
+                    values['scrub'] = scrub_map.get('resilver', 100)
+                else:
+                    values['scrub'] = scrub_map.get('complete', 100)
+
+            elif match:
+                health = match.group('health').upper()
                 values['health'] = health_map.get(health, 100)
+                for measure in measures:
+                    metric = int(match.group(measure))
+                    values['error-{0}'.format(measure)] = metric
                 break
 
         for point in cmd.points:

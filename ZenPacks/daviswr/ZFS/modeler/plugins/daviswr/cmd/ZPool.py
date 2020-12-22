@@ -46,7 +46,7 @@ class ZPool(CommandPlugin):
         status_logs_regex = r'^\s+logs$'
         status_cache_regex = r'^\s+cache$'
         status_spare_regex = r'^\s+spares$'
-        status_dev_regex = r'(?P<dev>\S+)\s+(?P<state>\S+)(?:\s+\d+){3}$'
+        status_dev_regex = r'(?P<dev>\S+)\s+(?P<health>\S+)(?:\s+\d+){3}$'
 
         for line in results.splitlines():
             get_match = re.match(get_regex, line)
@@ -181,6 +181,7 @@ class ZPool(CommandPlugin):
                     for boolean in ['cache', 'log', 'spare']:
                         last_root['is_{0}'.format(boolean)] = '0'
                     last_root['is_{0}'.format(last_type)] = '1'
+                    last_root['health'] = status_root_match.group('health')
 
             elif status_child_match:
                 last_type = 'child'
@@ -324,9 +325,6 @@ class ZPool(CommandPlugin):
                         modname = 'SpareDev'
                     else:
                         modname = 'RootVDev'
-                    # Starting value for health attribute until polled
-                    if 'health' not in comp:
-                        comp['health'] = 'TBD'
                     log.debug('Found %s: %s', modname, comp['id'])
                     root_rm.append(ObjectMap(
                         modname='ZenPacks.daviswr.ZFS.Z{0}'.format(modname),
@@ -374,9 +372,6 @@ class ZPool(CommandPlugin):
                                 comp.get('title', '').replace('-', '_')
                                 )
                             comp['id'] = self.prepId(id_str)
-                            # Starting value for health attribute until polled
-                            if 'health' not in comp:
-                                comp['health'] = 'TBD'
                             log.debug('Found child vDev: %s', comp['id'])
                             child_rm.append(ObjectMap(
                                 modname='ZenPacks.daviswr.ZFS.ZStoreDev',
