@@ -109,6 +109,22 @@ classes:
         label: Failure Mode
         type: string
         default: wait
+      feature_bookmarks:
+        label: Bookmarks
+        type: string
+        default: unsupported
+        details_display: true
+      feature_encryption:
+        label: Encryption
+        short_label: Crypto
+        type: string
+        default: unsupported
+        details_display: true
+      feature_lz4_compress:
+        label: LZ4 Compression
+        short_label: LZ4
+        type: string
+        default: unsupported
       fragmentation:
         label: Fragmentation Percentage
         short_label: "Frag %"
@@ -420,7 +436,18 @@ classes:
         type: int
       keysource:
         label: Key Source
-        short_label: Key
+        short_label: Key Src
+        type: string
+        default: unsupported
+        details_display: true
+      keylocation:
+        label: Key Location
+        short_label: Key Loc
+        type: string
+        default: unsupported
+        details_display: true
+      keyformat:
+        label: Key Format
         type: string
         default: unsupported
         details_display: true

@@ -77,7 +77,7 @@ class ZPool(CommandPlugin):
 
             if get_match:
                 pool = get_match.group('pool')
-                key = get_match.group('key')
+                key = get_match.group('key').replace('@', '_')
                 value = get_match.group('value')
                 if pool not in pools:
                     pools[pool] = dict()
