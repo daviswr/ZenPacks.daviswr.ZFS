@@ -55,10 +55,10 @@ if 'CollectorClient' in sys.modules:
                     command = talesEvalStr(plugin.command, device)
                 except Exception:
                     CollectorClient.log.exception(
-                        "%s - command parsing error",
+                        "%s - command TALES evaluation failed, proceeding",
                         device.id)
 
-                    continue
+                    command = plugin.command
             else:
                 command = plugin.command
 
