@@ -1,16 +1,17 @@
 # pylint: disable=line-too-long
+""" Models ZFS Pools and devices via SSH """
 
 import re
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.DataCollector.plugins.DataMaps import (
-    MultiArgs,
+    ObjectMap,
     RelationshipMap,
-    ObjectMap
     )
 
 
 class ZPool(CommandPlugin):
+    """ Models ZFS Pools and devices via SSH """
     requiredProperties = (
         'zZPoolIgnoreNames',
         # May not be needed due to TALES monkeypatch
@@ -33,6 +34,7 @@ class ZPool(CommandPlugin):
     command = ';'.join(commands)
 
     def process(self, device, results, log):
+        """ Generates RelationshipMaps from Command output """
         log.info(
             'Modeler %s processing data for device %s',
             self.name(),
@@ -268,7 +270,8 @@ class ZPool(CommandPlugin):
             comp = dict()
             for key in pools[pool]:
                 if key in booleans:
-                    comp[key] = True if ('on' == pools[pool][key]) else False
+                    comp[key] = (True if pools[pool][key] in ['on', 'yes']
+                                 else False)
                 elif key in ints:
                     comp[key] = int(pools[pool][key])
                 elif key in floats:
@@ -303,9 +306,8 @@ class ZPool(CommandPlugin):
                     children = list()
                     for key in roots[root]:
                         if key in dev_booleans:
-                            comp[key] = True \
-                                if '1' == roots[root][key] \
-                                else False
+                            comp[key] = (True if '1' == roots[root][key]
+                                         else False)
                         elif key in ints:
                             comp[key] = int(roots[root][key])
                         elif key == 'type':
@@ -356,9 +358,8 @@ class ZPool(CommandPlugin):
                             comp = dict()
                             for key in child:
                                 if key in dev_booleans:
-                                    comp[key] = True \
-                                        if '1' == child[key] \
-                                        else False
+                                    comp[key] = (True if '1' == child[key]
+                                                 else False)
                                 elif key in ints:
                                     comp[key] = int(child[key])
                                 elif key == 'type':
@@ -367,14 +368,8 @@ class ZPool(CommandPlugin):
                                     comp[key] = child[key]
                             comp['pool'] = pool
                             if comp.get('whole_disk') and comp.get('title'):
-                                match = re.match(
-                                    disk_id_regex,
-                                    comp['title']
-                                    ) \
-                                    or re.match(
-                                        disk_id_basic_regex,
-                                        comp['title']
-                                        )
+                                match = re.match(disk_id_regex, comp['title'])\
+                                    or re.match(disk_id_basic_regex, comp['title'])  # noqa
                                 if match:
                                     comp['title'] = match.groups()[0]
                             id_str = '{0}_{1}'.format(
@@ -391,8 +386,8 @@ class ZPool(CommandPlugin):
                 root_rm_list.append(root_rm)
 
         maps.append(pool_rm)
-        maps += root_rm_list
-        maps += child_rm_list
+        maps.extend(root_rm_list)
+        maps.extend(child_rm_list)
 
         log.debug(
             'ZPool RelMap:\n%s',

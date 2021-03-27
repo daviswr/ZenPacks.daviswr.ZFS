@@ -1,15 +1,18 @@
+# pylint: disable=line-too-long, invalid-name
+""" Models ZFS datasets via SSH """
+
 import re
 import time
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.DataCollector.plugins.DataMaps import (
-    MultiArgs,
+    ObjectMap,
     RelationshipMap,
-    ObjectMap
     )
 
 
 class ZFS(CommandPlugin):
+    """ Models ZFS datasets via SSH """
     requiredProperties = (
         'zZFSDatasetIgnoreNames',
         'zZFSDatasetIgnoreTypes',
@@ -31,6 +34,7 @@ class ZFS(CommandPlugin):
     command = ';'.join(commands)
 
     def process(self, device, results, log):
+        """ Generates RelationshipMaps from Command output """
         log.info(
             'Modeler %s processing data for device %s',
             self.name(),
@@ -171,10 +175,8 @@ class ZFS(CommandPlugin):
                 comp = dict()
                 for key in datasets[ds]:
                     if key in booleans:
-                        comp[key] = True \
-                            if ('on' == datasets[ds][key]
-                                or 'yes' == datasets[ds][key]) \
-                            else False
+                        comp[key] = (True if datasets[ds][key] in ['on', 'yes']
+                                     else False)
                     elif key in floats:
                         comp[key] = float(datasets[ds][key])
                     elif key in ints:
