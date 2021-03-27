@@ -1,3 +1,4 @@
+import re
 import sys
 from ZenPacks.zenoss.ZenPackLib import zenpacklib
 
@@ -17,7 +18,7 @@ schema = CFG.zenpack_module.schema
 # Note the first 3 paramters are mandatory ( args[0] to args[2] ), plugins
 #  is the first optional at args[3]. device may be args[5]
 #
-# Normally one cann pass TALES expressions to a command. This code
+# Normally one cannot pass TALES expressions to a command. This code
 # does a monkeypatch to the relative CollectorClient module already in
 # sys.modules to check for ${ syntax and performs a TALES evaluation.
 if 'CollectorClient' in sys.modules:
@@ -50,12 +51,12 @@ if 'CollectorClient' in sys.modules:
 
         # Do TALES evaluation of each plugin's command.
         for plugin in plugins:
-            if '${' in plugin.command:
+            if re.search(r'\$\{\S+\/\S+\}', plugin.command):
                 try:
                     command = talesEvalStr(plugin.command, device)
                 except Exception:
                     CollectorClient.log.exception(
-                        "%s - command TALES evaluation failed, proceeding",
+                        '%s - command TALES evaluation failed, proceeding',
                         device.id)
 
                     command = plugin.command
