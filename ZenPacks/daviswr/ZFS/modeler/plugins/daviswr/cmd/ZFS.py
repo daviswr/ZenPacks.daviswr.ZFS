@@ -25,16 +25,14 @@ class ZFS(CommandPlugin):
     # possible. Check out the monkeypatch of CollectorClient.getCommands
     # in this ZenPack's __init__.py to see what makes it possible.
     commands = [
-        # Prevent a blank zZFSExecPrefix from causing Zenoss to put
-        # $ZENHOME/libexec at the beginning of the command
-        '/bin/echo > /dev/null',
+        '$$ZENOTHING',
         '${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all',
         ]
     command = ';'.join(commands)
 
     def process(self, device, results, log):
         log.info(
-            "Modeler %s processing data for device %s",
+            'Modeler %s processing data for device %s',
             self.name(),
             device.id
             )

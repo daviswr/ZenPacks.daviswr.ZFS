@@ -192,7 +192,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -236,7 +245,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -266,7 +284,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -284,7 +311,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -302,7 +338,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -323,7 +368,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -341,7 +395,16 @@ classes:
         label: State
         type: int
         datapoint: zpool-status_health
-        enum: {1: "ONLINE", 2: "AVAIL", 3: "INUSE", 4: "DEGRADED", 5: "FAULTED", 6: "OFFLINE", 7: "UNAVAIL", 8: "REMOVED", 9: "SUSPENDED"}
+        enum:
+          1: "ONLINE"
+          2: "AVAIL"
+          3: "INUSE"
+          4: "DEGRADED"
+          5: "FAULTED"
+          6: "OFFLINE"
+          7: "UNAVAIL"
+          8: "REMOVED"
+          9: "SUSPENDED"
         grid_display: true
         details_display: true
         order: 1
@@ -753,7 +816,9 @@ classes:
         label: Mounted
         type: boolean
         default: true
-        enum: {true: "clear", false: "debug"}
+        enum:
+          true: "clear"
+          false: "debug"
         renderer: Zenoss.render.severity
         grid_display: true
         content_width: 40
@@ -885,7 +950,9 @@ device_classes:
             component: "${here/id}"
           zpool-get:
             usessh: true
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.get
             datapoints:
               allocated: GAUGE
@@ -895,7 +962,9 @@ device_classes:
               free: GAUGE
           zpool-iostat:
             usessh: true
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -904,7 +973,9 @@ device_classes:
               op-write: GAUGE
           zpool-status:
             usessh: true
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/title} | grep -e ${here/title} -e scrub -e scan"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/title} | grep -e ${here/title} -e scrub -e scan
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1051,7 +1122,9 @@ device_classes:
             component: "${here/id}"
           zpool-iostat:
             usessh: true
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -1061,7 +1134,9 @@ device_classes:
           zpool-status:
             usessh: true
             # This may not catch log devices. Further testing required
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/pool} | grep ${here/title}"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/pool} | grep ${here/title}
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1137,7 +1212,9 @@ device_classes:
             component: "${here/id}"
           zfs-get:
             usessh: true
-            commandTemplate: "/bin/echo > /dev/null;${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all ${here/title}"
+            commandTemplate: |-
+              $$ZENOTHING
+              ${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all ${here/title}
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             datapoints:
               available: GAUGE

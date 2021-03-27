@@ -25,9 +25,7 @@ class ZPool(CommandPlugin):
     # possible. Check out the monkeypatch of CollectorClient.getCommands
     # in this ZenPack's __init__.py to see what makes it possible.
     commands = [
-        # Prevent a blank zZFSExecPrefix from causing Zenoss to put
-        # $ZENHOME/libexec at the beginning of the command
-        '/bin/echo > /dev/null',
+        '$$ZENOTHING',
         '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all',
         '${here/zZFSExecPrefix} ${here/zZdbBinaryPath} -L',
         '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v',
@@ -36,7 +34,7 @@ class ZPool(CommandPlugin):
 
     def process(self, device, results, log):
         log.info(
-            "Modeler %s processing data for device %s",
+            'Modeler %s processing data for device %s',
             self.name(),
             device.id
             )
