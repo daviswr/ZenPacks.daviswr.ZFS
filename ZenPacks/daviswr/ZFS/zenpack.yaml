@@ -975,7 +975,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/title} | grep -e ${here/title} -e scrub -e scan
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v "${here/title}" | grep -e "${here/title}" -e scrub -e scan
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1136,7 +1136,7 @@ device_classes:
             # This may not catch log devices. Further testing required
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v ${here/pool} | grep ${here/title}
+              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v "${here/pool}" | grep "${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1214,7 +1214,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all ${here/title}
+              ${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all "${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             datapoints:
               available: GAUGE
