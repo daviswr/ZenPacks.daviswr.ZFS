@@ -4,17 +4,15 @@
 import re
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
-from Products.DataCollector.plugins.DataMaps import (
-    ObjectMap,
-    RelationshipMap,
-    )
+from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 
 
 class ZPool(CommandPlugin):
     """ Models ZFS Pools and devices via SSH """
     requiredProperties = (
         'zZPoolIgnoreNames',
-        # May not be needed due to TALES monkeypatch
+        # Required so they'll be available to the DeviceProxy
+        # during TALES evaluation
         'zZFSExecPrefix',
         'zZPoolBinaryPath',
         'zZdbBinaryPath',
