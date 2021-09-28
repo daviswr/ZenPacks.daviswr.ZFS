@@ -1384,3 +1384,34 @@ event_classes:
               else evt.component
           evt.summary = 'Pool {0} {1}% allocated'.format(pool_name, current)
           evt.eventClass = '/Storage'
+
+
+process_class_organizers:
+  ZFS:
+    remove: true
+    process_classes:
+      DEFAULTS:
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
+        fail_severity: 4
+      arc:
+        description: ZFS Adaptive Replacement Cache
+        includeRegex: arc_
+      metaslab:
+        description: ZFS Metaslabs
+        includeRegex: metaslab_
+      spl:
+        description: Solaris Porting Layer
+        includeRegex: spl_
+      zed:
+        description: ZFS Event Daemon
+        includeRegex: zed
+        replaceRegex: "\\/.*\\/(zed).*"
+        replacement: "\\1"
+      zfs:
+        description: ZFS system tasks
+        includeRegex: "z_\\w+"
+        replaceRegex: "(\\D+)_?\\d?"
+        replacement: "\\1"
+      zil:
+        description: ZFS Intent Log
+        includeRegex: zil_
