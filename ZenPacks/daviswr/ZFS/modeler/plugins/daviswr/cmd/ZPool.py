@@ -277,6 +277,9 @@ class ZPool(CommandPlugin):
                 elif (not key == 'vdev_tree'
                         and not key == 'name'):
                     comp[key] = pools[pool][key]
+            # If the pool name wasn't gotten from zdb
+            if 'title' not in comp:
+                comp['title'] = pool
             # Can't use the GUID since it's not available in iostat
             comp['id'] = self.prepId('pool_{0}'.format(pool))
             log.debug('Found ZPool: %s', comp['id'])
