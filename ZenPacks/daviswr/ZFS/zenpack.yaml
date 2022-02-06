@@ -25,15 +25,6 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
-      ZdbPath:
-        type: string
-        default: /sbin/zdb
-      ZpoolPath:
-        type: string
-        default: /sbin/zpool
-      PrivEscCmd:
-        type: string
-        default: ""
       allocated:
         label: Allocated Space
         short_label: Allocated
@@ -89,7 +80,7 @@ classes:
         label: Comment
         type: string
         details_display: true
-        order: 13
+        order: 16
       dedupditto:
         label: Block Ditto Threshold
         type: int
@@ -123,12 +114,14 @@ classes:
         type: string
         default: unsupported
         details_display: true
+        order: 13
       feature_encryption:
         label: Encryption
         short_label: Crypto
         type: string
         default: unsupported
         details_display: true
+        order: 14
       feature_lz4_compress:
         label: LZ4 Compression
         short_label: LZ4
@@ -196,7 +189,21 @@ classes:
         short_label: Ver
         type: string
         details_display: true
-        order: 13
+        order: 15
+      CriticalThreshold:
+        label: Critical Usage Percentage
+        short_label: "Critical %"
+        default: 90
+        editable: true
+        details_display: true
+        order: 32
+      ErrorThreshold:
+        label: Error Usage Percentage
+        short_label: "Error %"
+        default: 85
+        editable: true
+        details_display: true
+        order: 31
       HealthState:
         label: State
         type: int
@@ -214,6 +221,22 @@ classes:
         grid_display: true
         details_display: true
         order: 1
+      PrivEscCmd:
+        type: string
+        default: ""
+      WarningThreshold:
+        label: Warning Usage Percentage
+        short_label: "Warning %"
+        default: 80
+        editable: true
+        details_display: true
+        order: 30
+      ZdbPath:
+        type: string
+        default: /sbin/zdb
+      ZpoolPath:
+        type: string
+        default: /sbin/zpool
 
   ZVDev:
     label: ZFS Virtual Device
@@ -935,15 +958,17 @@ zProperties:
     type: lines
   zZPoolIgnoreNames:
     type: string
+  # These have been deprecated in favor of per-pool thresholds
+  # and will be removed by v1.0
   zZPoolThresholdWarning:
     type: int
-    default: 80
+    default: 101
   zZPoolThresholdError:
     type: int
-    default: 85
+    default: 101
   zZPoolThresholdCritical:
     type: int
-    default: 90
+    default: 101
   # These were never released in an egg,
   # will be entirely removed from YAML by v1.0
   # zZFSExecPrefix:
@@ -1015,7 +1040,7 @@ device_classes:
               - zpool-get_capacity
             severity: 3
             eventClass: /Status/ZFS
-            maxval: here.zZPoolThresholdWarning
+            maxval: here.WarningThreshold
           Capacity-Error:
             type: MinMaxThreshold
             enabled: true
@@ -1023,7 +1048,7 @@ device_classes:
               - zpool-get_capacity
             severity: 4
             eventClass: /Status/ZFS
-            maxval: here.zZPoolThresholdError
+            maxval: here.ErrorThreshold
           Capacity-Critical:
             type: MinMaxThreshold
             enabled: true
@@ -1031,7 +1056,7 @@ device_classes:
               - zpool-get_capacity
             severity: 5
             eventClass: /Status/ZFS
-            maxval: here.zZPoolThresholdCritical
+            maxval: here.CriticalThreshold
           Health:
             type: MinMaxThreshold
             enabled: true

@@ -5,10 +5,13 @@ ZenPack to model & monitor ZFS pools and datasets
 ## Requirements
 
 * An OS that supports ZFS (Solaris/Illumos, FreeBSD, Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/))
-  * Only tested against Debian with OpenZFS 0.6.5 so far...
+  * See "Illumos & FreeBSD notes" below for non-Linux hosts
 * An account on the ZFS-capable host, which can
   * Log in via SSH with a key
-  * Run the `zdb`, `zpool`, and `zfs` commands with certain parameters without password via `sudo`
+  * Use a bash-compatible shell
+  * Run the `zdb`, `zpool`, and `zfs` commands command with certain parameters via privilege escalation without password
+    * This may not be required on some hosts, depending on configuration
+    * Currently tries to detect `dzdo`, `doas`, `pfexec`, and `sudo`
 * [ZenPackLib](https://help.zenoss.com/in/zenpack-catalog/open-source/zenpacklib)
 
 Example entries in `/etc/sudoers`
@@ -19,6 +22,7 @@ Cmnd_Alias ZPOOL = /sbin/zpool get -pH all, /sbin/zpool iostat -y *, /sbin/zpool
 Cmnd_Alias ZFS = /sbin/zfs get -pH all, /sbin/zfs get -pH all *
 zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
 ```
+
 ## zProperties
 * `zZFSDatasetIgnoreNames`
   * Regex of dataset names for the modeler to ignore.
@@ -28,28 +32,30 @@ zenoss ALL=(ALL) NOPASSWD: ZDB, ZPOOL, ZFS
     * snapshot
     * volume
 * `zZPoolIgnoreNames`
-  * Regex of pool names for the modeler to ignore. 
-* `zZPoolThresholdWarning`
-  * Capacity percentage for warning threshold. Default 80.
-* `zZPoolThresholdError`
-  * Capacity percentage for error threshold. Default 85.
-* `zZPoolThresholdCritical`
-  * Capacity percentage for critical threshold. Default 90.
-* `zZFSExecPrefix`
-  * Prefix for zpool/zfs/zdb commands. Defaults to /usr/bin/sudo
-* `zZFSBinaryPath`
-  * Path to the zfs command. Defaults to /sbin/zfs
-* `zZPoolBinaryPath`
-  * Path to the zpool command. Defaults to /sbin/zpool
-* `zZdbBinaryPath`
-  * Path to the zdb command. Defaults to /sbin/zdb
+  * Regex of pool names for the modeler to ignore.
+* ~`zZPoolThresholdWarning`~
+  * DEPRECATED: Replaced by per-pool thresholds
+* ~`zZPoolThresholdError`~
+  * DEPRECATED: Replaced by per-pool thresholds
+* ~`zZPoolThresholdCritical`~
+  * DEPRECATED: Replaced by per-pool thresholds
+* ~`zZFSExecPrefix`~
+  * DEPRECATED: Deteremined by modeler
+* ~`zZFSBinaryPath`~
+  * DEPRECATED: Deteremined by modeler
+* ~`zZPoolBinaryPath`~
+  * DEPRECATED: Deteremined by modeler
+* ~`zZdbBinaryPath`~
+  * DEPRECATED: Deteremined by modeler
+
+Deprecated zProperties will be removed before the v1.0 release.
 
 ## Illumos & FreeBSD notes
-Being an OpenZFS/ZoL user, that's what I'm primarily developing against, so everything uses `sudo` rather than `pfexec` and paths to things are `/sbin` rather than `/usr/sbin`. But support might come in the form of a second set of modelers and monitoring templates.
+Being an OpenZFS/ZoL user, I'm primarily developing on Linux, but paths to `zdb`, `zfs`, and `zpool` should be automatically determined by the modeler, as well as what, if anything, to use for priviledge escalation (sudo, pfexec, etc).
 
-That said, this ZenPack's still a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
+**However**, there is currently a requirement for GNU `echo` in the modeler, where the BSD `echo` will not work.
 
-The `zZFSExecPrefix`, `zZFSBinaryPath`, `zZPoolBinaryPath`, and `zZdbBinaryPath` zProperties could be customized to work on a non-Linux system.
+That said, this ZenPack's a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
 ## Usage
 ### Modelers
