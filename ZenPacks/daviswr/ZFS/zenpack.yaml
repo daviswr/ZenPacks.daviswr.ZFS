@@ -1012,7 +1012,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 1 1
+              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 10 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -1172,7 +1172,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 1 1
+              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 10 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
