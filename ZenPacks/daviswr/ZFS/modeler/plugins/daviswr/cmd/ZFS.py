@@ -14,22 +14,35 @@ class ZFS(CommandPlugin):
         'zZFSDatasetIgnoreNames',
         'zZFSDatasetIgnoreTypes',
         'zZPoolIgnoreNames',
-        # Required so they'll be available to the DeviceProxy
-        # during TALES evaluation
-        'zZFSExecPrefix',
-        'zZFSBinaryPath',
         )
 
     deviceProperties = CommandPlugin.deviceProperties + requiredProperties
 
-    # Note that we're using TALES in the command. Normally that's not
-    # possible. Check out the monkeypatch of CollectorClient.getCommands
-    # in this ZenPack's __init__.py to see what makes it possible.
-    commands = [
-        '$$ZENOTHING',
-        '${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all',
-        ]
-    command = ';'.join(commands)
+    command_raw = r"""$ZENOTHING;
+        PATH=/sbin:/usr/sbin:$PATH;
+        IFS=$(echo -en "\n\b");
+        zfs_path=$(command -v zfs);
+        if [[ $zfs_path != *zfs ]];
+        then
+            zfs_path=$(whereis zfs | cut -d' ' -f2);
+        fi;
+        zfs_cmd="$zfs_path get -pH all 2>&1";
+        output=$(eval $zfs_cmd);
+        if [[ $output == *permission\ denied ]];
+        then
+            for priv_cmd in dzdo doas pfexec sudo;
+            do
+                if [[ -e $(command -v $priv_cmd) ]];
+                then
+                    break;
+                fi;
+            done;
+            zfs_cmd="$priv_cmd $zfs_cmd";
+        fi;
+        echo -e "zModelProps\tZfsPath\t$zfs_path\t-";
+        echo -e "zModelProps\tPrivEscCmd\t$priv_cmd\t-";
+        eval $zfs_cmd;"""
+    command = ' '.join(command_raw.replace('  ', '').splitlines())
 
     def process(self, device, results, log):
         """ Generates RelationshipMaps from Command output """
@@ -41,6 +54,7 @@ class ZFS(CommandPlugin):
         maps = list()
 
         pools = dict()
+        params = dict()
 
         get_regex = r'^(?P<ds>\S+)\t(?P<key>\S+)\t(?P<value>\S+)\t\S+$'
 
@@ -52,6 +66,10 @@ class ZFS(CommandPlugin):
                 pool = ds.split('/')[0]
                 key = get_match.group('key')
                 value = get_match.group('value')
+                # Hopefully no one has a pool actually named this...
+                if 'zModelProps' == ds:
+                    params[key] = value
+                    continue
                 if pool not in pools:
                     pools[pool] = dict()
                 if ds not in pools[pool]:
@@ -171,6 +189,7 @@ class ZFS(CommandPlugin):
                     continue
 
                 comp = dict()
+                comp.update(params)
                 for key in datasets[ds]:
                     if key in booleans:
                         comp[key] = (True if datasets[ds][key] in ['on', 'yes']

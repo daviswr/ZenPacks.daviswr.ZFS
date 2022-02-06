@@ -11,25 +11,90 @@ class ZPool(CommandPlugin):
     """ Models ZFS Pools and devices via SSH """
     requiredProperties = (
         'zZPoolIgnoreNames',
-        # Required so they'll be available to the DeviceProxy
-        # during TALES evaluation
-        'zZFSExecPrefix',
-        'zZPoolBinaryPath',
-        'zZdbBinaryPath',
         )
 
     deviceProperties = CommandPlugin.deviceProperties + requiredProperties
 
-    # Note that we're using TALES in the command. Normally that's not
-    # possible. Check out the monkeypatch of CollectorClient.getCommands
-    # in this ZenPack's __init__.py to see what makes it possible.
-    commands = [
-        '$$ZENOTHING',
-        '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all',
-        '${here/zZFSExecPrefix} ${here/zZdbBinaryPath} -L',
-        '${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v',
-        ]
-    command = ';'.join(commands)
+    command_raw = r"""$ZENOTHING;
+        PATH=/sbin:/usr/sbin:$PATH;
+        IFS=$(echo -en "\n\b");
+        zpool_path=$(command -v zpool);
+        if [[ $zpool_path != *zpool ]];
+        then
+            zpool_path=$(whereis zpool | cut -d' ' -f2);
+        fi;
+        zdb_path=$(command -v zdb);
+        if [[ $zdb_path != *zdb ]];
+        then
+            zdb_path=$(whereis zdb | cut -d' ' -f2);
+        fi;
+        zpool_get="$zpool_path get -pH all 2>&1";
+        zdb_cmd="$zdb_path -L 2>&1";
+        zpool_status="$zpool_path status -v 2>&1";
+        zpool_iostat="$zpool_path iostat -v -y 2>&1";
+        output=$(eval $zpool_get);
+        if [[ $output == *ermission\ denied ]];
+        then
+            for priv_cmd in dzdo doas pfexec sudo;
+            do
+                if [[ -e $(command -v $priv_cmd) ]];
+                then
+                    break;
+                fi;
+            done;
+            zpool_get="$priv_cmd $zpool_get";
+        fi;
+        output=$(eval $zdb_cmd);
+        if [[ $output == *ermission\ denied ]];
+        then
+            if [ -z "$priv_cmd" ];
+            then
+                for priv_cmd in dzdo doas pfexec sudo;
+                do
+                    if [[ -e $(command -v $priv_cmd) ]];
+                    then
+                        break;
+                    fi;
+                done;
+            fi;
+            zdb_cmd="$priv_cmd $zdb_cmd";
+        fi;
+        output=$(eval $zpool_status);
+        if [[ $output == *ermission\ denied ]];
+        then
+            if [ -z "$priv_cmd" ];
+            then
+                for priv_cmd in dzdo doas pfexec sudo;
+                do
+                    if [[ -e $(command -v $priv_cmd) ]];
+                    then
+                        break;
+                    fi;
+                done;
+            fi;
+            zpool_status="$priv_cmd $zpool_status";
+        fi;
+        output=$(eval $zpool_iostat);
+        if [[ $output == *ermission\ denied ]];
+        then
+            if [ -z "$priv_cmd" ];
+            then
+                for priv_cmd in dzdo doas pfexec sudo;
+                do
+                    if [[ -e $(command -v $priv_cmd) ]];
+                    then
+                        break;
+                    fi;
+                done;
+            fi;
+        fi;
+        echo -e "zModelProps\tZpoolPath\t$zpool_path\t-";
+        echo -e "zModelProps\tZdbPath\t$zdb_path\t-";
+        echo -e "zModelProps\tPrivEscCmd\t$priv_cmd\t-";
+        eval $zpool_get;
+        eval $zdb_cmd;
+        eval $zpool_status;"""
+    command = ' '.join(command_raw.replace('  ', '').splitlines())
 
     def process(self, device, results, log):
         """ Generates RelationshipMaps from Command output """
@@ -41,6 +106,7 @@ class ZPool(CommandPlugin):
         maps = list()
 
         pools = dict()
+        params = dict()
         last_parent = None
         last_pool = None
         last_root = None
@@ -65,8 +131,8 @@ class ZPool(CommandPlugin):
             zdb_root_match = re.match(r'^        ' + zdb_header_regex, line)
             zdb_vdev_match = re.match(r'^            ' + zdb_header_regex, line)  # noqa
             zdb_kv_match = re.match(zdb_kv_regex, line)
-            status_pool_match = re.match(status_pool_regex, line) \
-                or re.match(r'^\t' + status_dev_regex, line)
+            status_pool_match = (re.match(status_pool_regex, line)
+                                 or re.match(r'^\t' + status_dev_regex, line))
             status_logs_match = re.match(status_logs_regex, line)
             status_cache_match = re.match(status_cache_regex, line)
             status_spare_match = re.match(status_spare_regex, line)
@@ -77,6 +143,10 @@ class ZPool(CommandPlugin):
                 pool = get_match.group('pool')
                 key = get_match.group('key').replace('@', '_')
                 value = get_match.group('value')
+                # Hopefully no one has a pool actually named this...
+                if 'zModelProps' == pool:
+                    params[key] = value
+                    continue
                 if pool not in pools:
                     pools[pool] = dict()
                 if value.endswith('%') or re.match(r'^\d+\.\d{2}x$', value):
@@ -266,6 +336,7 @@ class ZPool(CommandPlugin):
                 continue
 
             comp = dict()
+            comp.update(params)
             for key in pools[pool]:
                 if key in booleans:
                     comp[key] = (True if pools[pool][key] in ['on', 'yes']
@@ -304,6 +375,7 @@ class ZPool(CommandPlugin):
                         del roots[key]
                 for root in roots:
                     comp = dict()
+                    comp.update(params)
                     children = list()
                     for key in roots[root]:
                         if key in dev_booleans:
@@ -357,6 +429,7 @@ class ZPool(CommandPlugin):
                             )
                         for child in children:
                             comp = dict()
+                            comp.update(params)
                             for key in child:
                                 if key in dev_booleans:
                                     comp[key] = (True if '1' == child[key]

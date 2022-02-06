@@ -25,6 +25,15 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      ZdbPath:
+        type: string
+        default: /sbin/zdb
+      ZpoolPath:
+        type: string
+        default: /sbin/zpool
+      PrivEscCmd:
+        type: string
+        default: ""
       allocated:
         label: Allocated Space
         short_label: Allocated
@@ -215,6 +224,12 @@ classes:
         type: string
         grid_display: false
         details_display: false
+      ZpoolPath:
+        type: string
+        default: /sbin/zpool
+      PrivEscCmd:
+        type: string
+        default: ""
       VDevType:
         label: Type
         # mirror, raidz, disk/file, spare(?)
@@ -420,6 +435,12 @@ classes:
       DEFAULTS:
         grid_display: false
         details_display: false
+      ZfsPath:
+        type: string
+        default: /sbin/zfs
+      PrivEscCmd:
+        type: string
+        default: ""
       zDsType:
         label: Dataset Type
         type: string
@@ -923,18 +944,20 @@ zProperties:
   zZPoolThresholdCritical:
     type: int
     default: 90
-  zZFSExecPrefix:
-    type: string
-    default: /usr/bin/sudo
-  zZFSBinaryPath:
-    type: string
-    default: /sbin/zfs
-  zZPoolBinaryPath:
-    type: string
-    default: /sbin/zpool
-  zZdbBinaryPath:
-    type: string
-    default: /sbin/zdb
+  # These were never released in an egg,
+  # will be entirely removed from YAML by v1.0
+  # zZFSExecPrefix:
+  #   type: string
+  #   default: /usr/bin/sudo
+  # zZFSBinaryPath:
+  #   type: string
+  #   default: /sbin/zfs
+  # zZPoolBinaryPath:
+  #   type: string
+  #   default: /sbin/zpool
+  # zZdbBinaryPath:
+  #   type: string
+  #   default: /sbin/zdb
 
 device_classes:
   /:
@@ -952,7 +975,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} get -pH all
+              ${here/PrivEscCmd} ${here/ZpoolPath} get -pH all
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.get
             datapoints:
               allocated: GAUGE
@@ -964,7 +987,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1
+              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 1 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -975,7 +998,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v "${here/title}" | grep -e "${here/title}" -e scrub -e scan
+              ${here/PrivEscCmd} ${here/ZpoolPath} status -v "${here/title}" | grep -e "${here/title}" -e scrub -e scan
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1124,7 +1147,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} iostat -y -v 1 1
+              ${here/PrivEscCmd} ${here/ZpoolPath} iostat -y -v 1 1
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.iostat
             datapoints:
               bw-read: GAUGE
@@ -1136,7 +1159,7 @@ device_classes:
             # This may not catch log devices. Further testing required
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZPoolBinaryPath} status -v "${here/pool}" | grep "${here/title}"
+              ${here/PrivEscCmd} ${here/ZpoolPath} status -v "${here/pool}" | grep "${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
@@ -1214,7 +1237,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/zZFSExecPrefix} ${here/zZFSBinaryPath} get -pH all "${here/title}"
+              ${here/PrivEscCmd} ${here/ZfsPath} get -pH all "${here/title}"
             parser: ZenPacks.daviswr.ZFS.parsers.zfs.get
             datapoints:
               available: GAUGE
