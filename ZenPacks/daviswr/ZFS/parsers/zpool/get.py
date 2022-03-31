@@ -1,12 +1,13 @@
+""" Parses `zpool get` output """
+
 import re
 
-from Products.ZenRRD.CommandParser \
-    import CommandParser
-from Products.ZenUtils.Utils \
-    import prepId
+from Products.ZenRRD.CommandParser import CommandParser
+from Products.ZenUtils.Utils import prepId
 
 
 class get(CommandParser):
+    """ Parses `zpool get` output """
 
     def processResults(self, cmd, result):
         """"

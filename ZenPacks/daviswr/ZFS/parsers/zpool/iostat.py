@@ -1,14 +1,14 @@
 # pylint: disable=C0301
+""" Parses `zpool iostat` output """
 
 import re
 
-from Products.ZenRRD.CommandParser \
-    import CommandParser
-from Products.ZenUtils.Utils \
-    import prepId
+from Products.ZenRRD.CommandParser import CommandParser
+from Products.ZenUtils.Utils import prepId
 
 
 class iostat(CommandParser):
+    """ Parses `zpool iostat` output """
 
     def processResults(self, cmd, result):
         """

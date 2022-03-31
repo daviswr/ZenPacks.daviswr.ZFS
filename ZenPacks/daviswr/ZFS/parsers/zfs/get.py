@@ -1,12 +1,12 @@
+""" Parses `zfs get` output """
+
 import re
 
-from Products.ZenRRD.CommandParser \
-    import CommandParser
-from Products.ZenUtils.Utils \
-    import prepId
+from Products.ZenRRD.CommandParser import CommandParser
 
 
 class get(CommandParser):
+    """ Parses `zfs get` output """
 
     def processResults(self, cmd, result):
         """
