@@ -1023,7 +1023,7 @@ device_classes:
             usessh: true
             commandTemplate: |-
               $$ZENOTHING
-              ${here/PrivEscCmd} ${here/ZpoolPath} status -v "${here/title}" | grep -e "${here/title}" -e scrub -e scan
+              ${here/PrivEscCmd} ${here/ZpoolPath} status -v "${here/title}" | grep -e "${here/title}" -e state -e status -e scrub -e scan -e error
             parser: ZenPacks.daviswr.ZFS.parsers.zpool.status
             datapoints:
               health: GAUGE
