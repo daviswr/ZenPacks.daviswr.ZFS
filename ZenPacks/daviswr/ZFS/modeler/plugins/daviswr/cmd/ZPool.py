@@ -17,7 +17,7 @@ class ZPool(CommandPlugin):
 
     command_raw = r"""$ZENOTHING;
         PATH=/sbin:/usr/sbin:$PATH;
-        IFS=$(echo -en "\n\b");
+        IFS=$'\n';
         zpool_path=$(command -v zpool);
         if [[ $zpool_path != *zpool ]];
         then

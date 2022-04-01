@@ -53,8 +53,6 @@ Deprecated zProperties will be removed before the v1.0 release.
 ## Illumos & FreeBSD notes
 Being an OpenZFS/ZoL user, I'm primarily developing on Linux, but paths to `zdb`, `zfs`, and `zpool` should be automatically determined by the modeler, as well as what, if anything, to use for priviledge escalation (sudo, pfexec, etc).
 
-**However**, there is currently a requirement for GNU `echo` in the modeler, where the BSD `echo` will not work.
-
 That said, this ZenPack's a work in progress; all of the `zdb`, `zpool`, and `zfs` parameters should work on an Illumos system, at least. Some [patient](https://github.com/Crosse) [friends](https://github.com/baileytj3) that use SmartOS have helped me with that.
 
 ## Usage

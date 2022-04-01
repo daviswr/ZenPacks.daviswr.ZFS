@@ -20,7 +20,7 @@ class ZFS(CommandPlugin):
 
     command_raw = r"""$ZENOTHING;
         PATH=/sbin:/usr/sbin:$PATH;
-        IFS=$(echo -en "\n\b");
+        IFS=$'\n';
         zfs_path=$(command -v zfs);
         if [[ $zfs_path != *zfs ]];
         then
