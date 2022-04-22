@@ -874,6 +874,8 @@ classes:
         type: string
         grid_display: true
         details_display: true
+        content_width: 160
+        label_width: 160
         order: 5
       nbmand:
         label: Non-Blocking Mandatory Locks
