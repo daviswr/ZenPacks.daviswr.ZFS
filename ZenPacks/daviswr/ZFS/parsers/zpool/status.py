@@ -36,7 +36,7 @@ class status(CommandParser):
         errors: No known data errors
         """
         device_re = r'(?P<dev>\S+)\s+(?P<health>\S+)\s+(?P<read>\d+)\s+(?P<write>\d+)\s+(?P<cksum>\d+)'  # noqa
-        device_error_re = device_re + r'\s+(?P<msg>\w.+)[\r\n]'
+        device_error_re = device_re + r'\s+(?P<msg>\w.+)$'
 
         # Convert pool state to number for monitoring template
         # An event transform will make this human-readable again
@@ -101,7 +101,9 @@ class status(CommandParser):
                 pool_health = health_map.get(line.split(':')[1].strip(), 100)
 
             elif 'status:' in line:
-                events['status'] = line.split(':', 1)[1].strip()
+                message = line.split(':', 1)[1].strip()
+                events['status'] = (message[:-3] if message.endswith(' or')
+                                    else message)
 
             elif 'errors:' in line:
                 message = line.split(':')[-1].strip()
@@ -109,7 +111,7 @@ class status(CommandParser):
                                     else message)
 
         if comp_health and pool_health:
-            # If both available, use the worst value
+            # If both available, use the worse value
             values['health'] = (comp_health if comp_health >= pool_health
                                 else pool_health)
         elif comp_health:
@@ -118,7 +120,7 @@ class status(CommandParser):
             values['health'] = pool_health
 
         if events['device'] or events['errors'] or events['status']:
-            for message in events.items():
+            for message in events.values():
                 if message:
                     result.events.append({
                         'device': cmd.deviceConfig.device,
