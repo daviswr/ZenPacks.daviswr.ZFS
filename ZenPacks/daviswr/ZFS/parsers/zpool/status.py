@@ -103,7 +103,7 @@ class status(CommandParser):
             elif 'status:' in line:
                 message = line.split(':', 1)[1].strip()
                 events['status'] = (message[:-3] if message.endswith(' or')
-                                    else message)
+                                    else message.split('.')[0])
 
             elif 'errors:' in line:
                 message = line.split(':')[-1].strip()
