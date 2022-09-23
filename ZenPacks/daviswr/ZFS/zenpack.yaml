@@ -1455,6 +1455,7 @@ process_class_organizers:
       zed:
         description: ZFS Event Daemon
         includeRegex: zed
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash|ffprobe)\\b"
         replaceRegex: "\\/.*\\/(zed).*"
         replacement: "\\1"
       zfs:
