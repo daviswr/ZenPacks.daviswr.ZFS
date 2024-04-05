@@ -191,24 +191,35 @@ class ZFS(CommandPlugin):
                 comp = dict()
                 comp.update(params)
                 for key in datasets[ds]:
-                    if key in booleans:
-                        comp[key] = (True if datasets[ds][key] in ['on', 'yes']
-                                     else False)
-                    elif key in floats:
-                        comp[key] = float(datasets[ds][key])
-                    elif key in ints:
-                        comp[key] = int(datasets[ds][key])
-                    elif key in times:
-                        comp[key] = time.strftime(
-                            time_format,
-                            time.localtime(int(datasets[ds][key]))
+                    try:
+                        if 'none' == datasets[ds][key]:
+                            comp[key] = datasets[ds][key]
+                        elif key in booleans:
+                            comp[key] = (True
+                                         if datasets[ds][key] in ['on', 'yes']
+                                         else False)
+                        elif key in floats:
+                            comp[key] = float(datasets[ds][key])
+                        elif key in ints:
+                            comp[key] = int(datasets[ds][key])
+                        elif key in times:
+                            comp[key] = time.strftime(
+                                time_format,
+                                time.localtime(int(datasets[ds][key]))
+                                )
+                        elif 'encryption' == key and 'on' == datasets[ds][key]:
+                            # https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html  # noqa
+                            # The default encryption algorithm is aes-128-ccm
+                            # when a file system's encryption value is on.
+                            comp[key] = 'aes-128-ccm'
+                        else:
+                            comp[key] = datasets[ds][key]
+                    except ValueError:
+                        log.debug(
+                            "Key %s has unexpected value '%s'",
+                            key,
+                            datasets[ds][key]
                             )
-                    elif 'encryption' == key and 'on' == datasets[ds][key]:
-                        # https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html  # noqa
-                        # The default encryption algorithm is aes-128-ccm when
-                        # a file system's encryption value is on.
-                        comp[key] = 'aes-128-ccm'
-                    else:
                         comp[key] = datasets[ds][key]
                 prefix = prefixes.get(comp.get('zDsType'), '')
                 suffix = suffixes.get(comp.get('zDsType'), 'Dataset')
@@ -216,7 +227,11 @@ class ZFS(CommandPlugin):
                 # making it unique
                 comp['id'] = self.prepId('{0}_{1}'.format(prefix, ds))
                 comp['title'] = ds
-                log.debug('Found ZFS %s: %s', comp.get('type', ''), comp['id'])
+                log.debug(
+                    'Found ZFS %s: %s',
+                    comp.get('zDsType', ''),
+                    comp['id']
+                    )
                 mod = 'ZenPacks.daviswr.ZFS.ZFS{0}'.format(suffix)
                 rm.append(ObjectMap(
                     modname=mod,
