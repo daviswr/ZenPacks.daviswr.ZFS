@@ -1,4 +1,4 @@
-# pylint: disable=C0301
+# pylint:disable=invalid-name,no-init,no-self-use,too-few-public-methods
 """ Parses `zpool iostat` output """
 
 import re
@@ -7,6 +7,7 @@ from Products.ZenRRD.CommandParser import CommandParser
 from Products.ZenUtils.Utils import prepId
 
 
+# pylint:disable=line-too-long,too-many-locals
 class iostat(CommandParser):
     """ Parses `zpool iostat` output """
 
@@ -60,7 +61,10 @@ class iostat(CommandParser):
                             or device.startswith('mirror')):
                         if device not in offsets:
                             offsets[device] = 0
-                        device_name = '{0}-{1}'.format(device, offsets[device])
+                        suffix = '-{0}'.format(offsets[device])
+                        device_name = (device if device.endswith(suffix)
+                                       else '{0}{1}'.format(device, suffix)
+                                       )
                         offsets[device] += 1
                     else:
                         device_name = device
