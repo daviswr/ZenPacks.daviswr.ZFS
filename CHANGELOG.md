@@ -10,7 +10,7 @@
 ### Changed
  * Removed dependency on GNU echo
 
-## Fixed
+### Fixed
  * ZPool status line check
  * Event summary generation in zpool status parser
  * zed process regex will not match ffprobe
