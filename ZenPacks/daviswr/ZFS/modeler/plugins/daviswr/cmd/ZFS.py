@@ -116,6 +116,7 @@ class ZFS(CommandPlugin):
             'reservation',
             'snapshot_count',
             'snapshot_limit',
+            'special_small_blocks',
             'used',
             'usedbychildren',
             'usedbydataset',
@@ -161,7 +162,7 @@ class ZFS(CommandPlugin):
             log.info('zZPoolIgnoreNames set to %s', ignore_pools_regex)
 
         # Dataset components
-        for pool in pools:
+        for pool, datasets in pools.items():
             if ignore_pools_regex and re.match(ignore_pools_regex, pool):
                 log.debug('Skipping pool %s due to zZPoolIgnoreNames', pool)
                 continue
@@ -172,7 +173,6 @@ class ZFS(CommandPlugin):
                 modname='ZenPacks.daviswr.ZFS.ZFSDataset'
                 )
 
-            datasets = pools[pool]
             for ds in datasets:
                 if ignore_names_regex and re.match(ignore_names_regex, ds):
                     log.debug(
@@ -190,37 +190,35 @@ class ZFS(CommandPlugin):
 
                 comp = dict()
                 comp.update(params)
-                for key in datasets[ds]:
+                for key, value in datasets[ds].items():
                     try:
-                        if 'none' == datasets[ds][key]:
-                            comp[key] = datasets[ds][key]
-                        elif key in booleans:
-                            comp[key] = (True
-                                         if datasets[ds][key] in ['on', 'yes']
-                                         else False)
+                        if key in booleans:
+                            comp[key] = bool(value in ['on', 'yes'])
+                        elif 'none' == value:
+                            comp[key] = value
                         elif key in floats:
-                            comp[key] = float(datasets[ds][key])
+                            comp[key] = float(value)
                         elif key in ints:
-                            comp[key] = int(datasets[ds][key])
+                            comp[key] = int(value)
                         elif key in times:
                             comp[key] = time.strftime(
                                 time_format,
-                                time.localtime(int(datasets[ds][key]))
+                                time.localtime(int(value))
                                 )
-                        elif 'encryption' == key and 'on' == datasets[ds][key]:
+                        elif 'encryption' == key and 'on' == value:
                             # https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html  # noqa
                             # The default encryption algorithm is aes-128-ccm
                             # when a file system's encryption value is on.
                             comp[key] = 'aes-128-ccm'
                         else:
-                            comp[key] = datasets[ds][key]
+                            comp[key] = value
                     except ValueError:
                         log.debug(
                             "Key %s has unexpected value '%s'",
                             key,
-                            datasets[ds][key]
+                            value
                             )
-                        comp[key] = datasets[ds][key]
+                        comp[key] = value
                 prefix = prefixes.get(comp.get('zDsType'), '')
                 suffix = suffixes.get(comp.get('zDsType'), 'Dataset')
                 # Pool name should already be part of the dataset name,

@@ -337,17 +337,20 @@ class ZPool(CommandPlugin):
 
             comp = dict()
             comp.update(params)
-            for key in pools[pool]:
-                if key in booleans:
-                    comp[key] = (True if pools[pool][key] in ['on', 'yes']
-                                 else False)
-                elif key in ints:
-                    comp[key] = int(pools[pool][key])
-                elif key in floats:
-                    comp[key] = float(pools[pool][key])
-                elif (not key == 'vdev_tree'
-                        and not key == 'name'):
-                    comp[key] = pools[pool][key]
+            for key, value in pools[pool].items():
+                try:
+                    if key in booleans:
+                        comp[key] = bool(value in ['on', 'yes'])
+                    elif 'none' == value:
+                        comp[key] = value
+                    elif key in ints:
+                        comp[key] = int(value)
+                    elif key in floats:
+                        comp[key] = float(value)
+                    elif key != 'vdev_tree' and key != 'name':
+                        comp[key] = value
+                except ValueError:
+                    comp[key] = value
             # If the pool name wasn't gotten from zdb
             if 'title' not in comp:
                 comp['title'] = pool
@@ -377,24 +380,30 @@ class ZPool(CommandPlugin):
                     comp = dict()
                     comp.update(params)
                     children = list()
-                    for key in roots[root]:
+                    for key, value in roots[root].items():
                         if key in dev_booleans:
-                            comp[key] = (True if '1' == roots[root][key]
-                                         else False)
+                            comp[key] = bool('1' == value)
                         elif key in ints:
-                            comp[key] = int(roots[root][key])
+                            try:
+                                comp[key] = int(value)
+                            except ValueError:
+                                comp[key] = value
                         elif key == 'type':
-                            comp['VDevType'] = roots[root][key]
+                            comp['VDevType'] = value
                         elif (key.startswith('children[')
                                 or key.startswith('cache_')
                                 or key.startswith('spare_')):
-                            children.append(roots[root][key])
+                            children.append(value)
                         elif not key == 'name':
-                            comp[key] = roots[root][key]
+                            comp[key] = value
                     comp['pool'] = pool
                     if comp.get('whole_disk') and comp.get('title'):
-                        match = re.match(disk_id_regex, comp['title']) \
-                            or re.match(disk_id_basic_regex, comp['title'])
+                        match = (re.match(disk_id_regex, comp['title'])
+                                 or re.match(
+                                     disk_id_basic_regex,
+                                     comp['title']
+                                     )
+                                 )
                         if match:
                             comp['title'] = match.groups()[0]
                     id_str = '{0}_{1}'.format(
@@ -430,20 +439,26 @@ class ZPool(CommandPlugin):
                         for child in children:
                             comp = dict()
                             comp.update(params)
-                            for key in child:
+                            for key, value in child.items():
                                 if key in dev_booleans:
-                                    comp[key] = (True if '1' == child[key]
-                                                 else False)
+                                    comp[key] = bool('1' == value)
                                 elif key in ints:
-                                    comp[key] = int(child[key])
+                                    try:
+                                        comp[key] = int(value)
+                                    except ValueError:
+                                        comp[key] = value
                                 elif key == 'type':
-                                    comp['VDevType'] = child[key]
+                                    comp['VDevType'] = value
                                 elif not key == 'name':
-                                    comp[key] = child[key]
+                                    comp[key] = value
                             comp['pool'] = pool
                             if comp.get('whole_disk') and comp.get('title'):
-                                match = re.match(disk_id_regex, comp['title'])\
-                                    or re.match(disk_id_basic_regex, comp['title'])  # noqa
+                                match = (re.match(disk_id_regex, comp['title'])
+                                         or re.match(
+                                             disk_id_basic_regex,
+                                             comp['title']
+                                             )
+                                         )
                                 if match:
                                     comp['title'] = match.groups()[0]
                             id_str = '{0}_{1}'.format(
