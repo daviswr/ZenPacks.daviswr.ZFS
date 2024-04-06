@@ -4,7 +4,7 @@ ZenPack to model & monitor ZFS pools and datasets
 
 ## Requirements
 
-* An OS that supports ZFS (Solaris/Illumos, FreeBSD, Linux with [ZFS-on-Linux (ZoL)](http://zfsonlinux.org/))
+* An OS that supports ZFS (Solaris/Illumos, FreeBSD, Linux with [OpenZFS](https://openzfs.org/))
   * See "Illumos & FreeBSD notes" below for non-Linux hosts
 * An account on the ZFS-capable host, which can
   * Log in via SSH with a key
@@ -12,7 +12,7 @@ ZenPack to model & monitor ZFS pools and datasets
   * Run the `zdb`, `zpool`, and `zfs` commands command with certain parameters via privilege escalation without password
     * This may not be required on some hosts, depending on configuration
     * Currently tries to detect `dzdo`, `doas`, `pfexec`, and `sudo`
-* [ZenPackLib](https://help.zenoss.com/in/zenpack-catalog/open-source/zenpacklib)
+* [ZenPackLib](https://zenpacks.zenoss.io/zenoss/ZenPackLib/)
 
 Example entries in `/etc/sudoers`
 
